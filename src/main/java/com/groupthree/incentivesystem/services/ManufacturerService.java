@@ -26,19 +26,20 @@ public class ManufacturerService {
 
 	private final String passwordPattern = "^[\\w|_|$|\\.|@]+$";
 	private final String namePattern = "^[a-zA-Z|\\s]{3,34}$";
-	private final String emailPattern = "^[\\w]+@[a-z]+\\.[a-z]{2,5}&";
+	private final String emailPattern = "[a-z\\._]+@[a-z]+[\\.][a-z]{2,5}";
 
 	// Login Validator
 	public boolean validator(int mId, String password) {
-		if (password.matches(passwordPattern) && manRepo.existsById(mId))
-			return true;
-		else
-			return false;
+		if (password.matches(passwordPattern) && manRepo.existsById(mId)) return true;
+		else return false;
 	}
 
 	// Registration Validator
-	public boolean validator(String mName, String mEmail, String password) {
-		if (password.matches(passwordPattern) && mName.matches(namePattern) && mEmail.matches(emailPattern))
+	public boolean validator(String mName, String mEmail, String mPass) {
+		if (mPass.matches(passwordPattern) && 
+				mName.matches(namePattern) && 
+				!manRepo.existsByManufacturerName(mName) &&
+				mEmail.matches(emailPattern))
 			return true;
 		else
 			return false;
@@ -86,9 +87,12 @@ public class ManufacturerService {
 
 	// Insert Car
 	public Car insertCar(int mId, String carModel, long carBasePrice, long carMsp) {
-		String manufacturer = fetchManufacturerName(mId);
-		cObj = new Car(manufacturer, carModel, carBasePrice, carMsp);
-		return carRepo.save(cObj);
+		if(!carRepo.existsById(carModel)) {
+			String manufacturer = fetchManufacturerName(mId);
+			cObj = new Car(manufacturer, carModel, carBasePrice, carMsp);
+			return carRepo.save(cObj);
+		}
+		else return new Car(null, null, 0l, 0l);
 	}
 
 	// Deal Status Update
@@ -108,5 +112,11 @@ public class ManufacturerService {
 	// Find manufacturer name
 	public String fetchManufacturerName(int mId) {
 		return manRepo.findById(mId).get().getManufacturerName();
+	}
+	
+	// Fetch all cars
+	public List<Car> fetchAllCars(int mId){
+		String manufacturer = fetchManufacturerName(mId);
+		return carRepo.findByCarManufacturer(manufacturer);
 	}
 }

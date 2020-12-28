@@ -7,5 +7,5 @@ import com.groupthree.incentivesystem.entities.Manufacturer;
 
 @Repository
 public interface ManufacturerRepository extends JpaRepository<Manufacturer, Integer>{
-
+	public boolean existsByManufacturerName(String name);
 }

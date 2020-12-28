@@ -19,6 +19,19 @@ public class Deals {
 	@Column(name = "deal_status")
 	private String dealStatus;
 
+	public Deals() {
+	}
+
+	public Deals(String dealManufacturer, String dealModel, long carBasePrice, long carMsp, String incentiveRange,
+			String dealStatus) {
+		this.dealManufacturer = dealManufacturer;
+		this.dealModel = dealModel;
+		this.carBasePrice = carBasePrice;
+		this.carMsp = carMsp;
+		this.incentiveRange = incentiveRange;
+		this.dealStatus = dealStatus;
+	}
+
 	public String getDealManufacturer() {
 		return dealManufacturer;
 	}
@@ -74,8 +87,8 @@ public class Deals {
 	@Override
 	public String toString() {
 		return "Deals [dealManufacturer=" + dealManufacturer + ", dealModel=" + dealModel + ", carBasePrice="
-				+ carBasePrice + ", carMsp=" + carMsp + ", incentiveRange=" + incentiveRange + ", dealStatus=" + dealStatus
-				+ "]";
+				+ carBasePrice + ", carMsp=" + carMsp + ", incentiveRange=" + incentiveRange + ", dealStatus="
+				+ dealStatus + "]";
 	}
 
 }
