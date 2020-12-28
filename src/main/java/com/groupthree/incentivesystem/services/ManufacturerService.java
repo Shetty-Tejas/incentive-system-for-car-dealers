@@ -24,8 +24,8 @@ public class ManufacturerService {
 	@Autowired
 	DealsRepository dealsRepo;
 
-	private final String passwordPattern = "^[\\w|_|$|\\.|@]+$";
-	private final String namePattern = "^[a-zA-Z|\\s]{3,34}$";
+	private final String passwordPattern = "^[a-zA-Z0-9|_|$|\\.|@]++$";
+	private final String namePattern = "^[a-zA-Z| ]{3,34}$";
 	private final String emailPattern = "[a-z\\._]+@[a-z]+[\\.][a-z]{2,5}";
 
 	// Login Validator
