@@ -26,7 +26,7 @@ public class ManufacturerService {
 
 	private final String passwordPattern = "^[a-zA-Z0-9|_|$|\\.|@]+$";
 	private final String namePattern = "^[a-zA-Z| ]{3,34}$";
-	private final String emailPattern = "[a-z\\._]+@[a-z]+[\\.][a-z]{2,5}";
+	private final String emailPattern = "^([a-z]+([\\._]\1{2})?)+@[a-z]+[\\.][a-z]{2,5}$";
 
 	// Login Validator
 	public boolean validator(int mId, String password) {
@@ -38,8 +38,8 @@ public class ManufacturerService {
 	public boolean validator(String mName, String mEmail, String mPass) {
 		if (mPass.matches(passwordPattern) && 
 				mName.matches(namePattern) && 
-				!manRepo.existsByManufacturerName(mName) &&
-				mEmail.matches(emailPattern))
+				mEmail.matches(emailPattern) && 
+				!manRepo.existsByManufacturerName(mName))
 			return true;
 		else
 			return false;
@@ -73,7 +73,7 @@ public class ManufacturerService {
 	// Login
 	public boolean manufacturerLogin(int mId, String password) {
 		mObj = manRepo.findById(mId).get();
-		if (mObj.getManufacturerId() == mId && mObj.getManufacturerPass().equals(password))
+		if (mObj.getManufacturerPass().equals(password))
 			return true;
 		else
 			return false;

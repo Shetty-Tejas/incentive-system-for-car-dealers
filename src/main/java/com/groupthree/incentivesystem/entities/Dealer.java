@@ -18,6 +18,17 @@ public class Dealer {
 	@Column(name = "dealer_incentive")
 	private long dealerIncentive;
 
+	public Dealer() {
+	}
+
+	public Dealer(String dealerName, long dealerContact, String dealerPass) {
+		super();
+		this.dealerName = dealerName;
+		this.dealerContact = dealerContact;
+		this.dealerPass = dealerPass;
+		this.dealerIncentive = 0;
+	}
+
 	public int getDealerId() {
 		return dealerId;
 	}
