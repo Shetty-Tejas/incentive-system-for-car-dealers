@@ -50,26 +50,26 @@ public class ManufacturerController {
 
 	@PostMapping("/manufacturer/logged/alterStatus")
 	public Deals alterStatus(@RequestParam String carModel, @RequestParam boolean flag) {
-		if(manufacturerService.validator(carModel)) {
+		if (manufacturerService.validator(carModel)) {
 			return manufacturerService.updateDealStatus(carModel, flag);
-		}
-		else return new Deals(null, null, 0l, 0l, null, null);
+		} else
+			return new Deals(null, null, 0l, 0l, null, null);
 	}
-	
+
 	@GetMapping("/manufacturer/logged/fetchAllDeals")
-	public List<Deals> fetchAllDeals(@RequestParam int mId){
-		if(manufacturerService.validator(mId)) {
+	public List<Deals> fetchAllDeals(@RequestParam int mId) {
+		if (manufacturerService.validator(mId)) {
 			return manufacturerService.fetchAllDeals(mId);
-		}
-		else return null;
+		} else
+			return null;
 	}
-	
+
 	@GetMapping("/manufacturer/logged/fetchAllCars")
-	public List<Car> fetchAllCars(@RequestParam int mId){
-		if(manufacturerService.validator(mId)) {
+	public List<Car> fetchAllCars(@RequestParam int mId) {
+		if (manufacturerService.validator(mId)) {
 			return manufacturerService.fetchAllCars(mId);
-		}
-		else return null;
+		} else
+			return null;
 	}
 
 }
