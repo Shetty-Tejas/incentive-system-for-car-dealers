@@ -1,5 +1,6 @@
 package com.groupthree.incentivesystem;
 
+import java.util.LinkedList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,7 +62,7 @@ public class ManufacturerController {
 		if (manufacturerService.validator(mId)) {
 			return manufacturerService.fetchAllDeals(mId);
 		} else
-			return null;
+			return new LinkedList<>();
 	}
 
 	@GetMapping("/manufacturer/logged/fetchAllCars")
@@ -69,7 +70,7 @@ public class ManufacturerController {
 		if (manufacturerService.validator(mId)) {
 			return manufacturerService.fetchAllCars(mId);
 		} else
-			return null;
+			return new LinkedList<>();
 	}
 
 }
