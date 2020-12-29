@@ -3,7 +3,9 @@ package com.groupthree.incentivesystem.services;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.groupthree.incentivesystem.entities.Car;
 import com.groupthree.incentivesystem.entities.Dealer;
+import com.groupthree.incentivesystem.entities.Deals;
 import com.groupthree.incentivesystem.repositories.CarRepository;
 import com.groupthree.incentivesystem.repositories.DealerRepository;
 import com.groupthree.incentivesystem.repositories.DealsRepository;
@@ -16,6 +18,8 @@ public class DealerService {
 	private final String contactPattern = "^[987][0-9]{9}$";
 
 	Dealer dObj;
+	Car cObj;
+	Deals dealsObj;
 
 	@Autowired
 	DealerRepository dealerRepo;
@@ -45,6 +49,27 @@ public class DealerService {
 			return false;
 	}
 	
+	// Checks if Car exists in CarRepo and doesn't exist in DealsRepo
+	public boolean validator(String dealModel) {
+		if(carRepo.existsById(dealModel) && !dealsRepo.existsById(dealModel)) return true;
+		else return false;
+	}
+	
+	// Validates incentive Range
+	public boolean incentiveValidator(String incentiveRange) {
+		int index = incentiveRange.indexOf('-');
+		try {
+			int minRange = Integer.parseInt(incentiveRange.substring(0, index));
+			int maxRange = Integer.parseInt(incentiveRange.substring(index + 1));
+			if (minRange >= maxRange && minRange < 0 && maxRange > 100) {
+				return false;
+			}
+			else return true;
+		} catch (NumberFormatException e) {
+			return false;
+		}
+	}
+	
 	// Dealer Login
 	public boolean dealerLogin(int dId, String dPass) {
 		dObj = dealerRepo.findById(dId).get();
@@ -61,5 +86,12 @@ public class DealerService {
 	}
 	
 	// Create Deals
+	public Deals createDeals(String dealModel, String incentiveRange) {
+		cObj = carRepo.findById(dealModel).get();
+		dealsObj = new Deals(cObj.getCarManufacturer(), dealModel, cObj.getCarBasePrice(), 
+				cObj.getCarMsp(), incentiveRange);
+		return dealsRepo.save(dealsObj);
+	}
 	
+	//
 }

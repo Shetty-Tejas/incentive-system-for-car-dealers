@@ -53,7 +53,7 @@ public class ManufacturerController {
 		if (manufacturerService.validator(carModel)) {
 			return manufacturerService.updateDealStatus(carModel, flag);
 		} else
-			return new Deals(null, null, 0l, 0l, null, null);
+			return new Deals(null, null, 0l, 0l, null);
 	}
 
 	@GetMapping("/manufacturer/logged/fetchAllDeals")

@@ -22,14 +22,13 @@ public class Deals {
 	public Deals() {
 	}
 
-	public Deals(String dealManufacturer, String dealModel, long carBasePrice, long carMsp, String incentiveRange,
-			String dealStatus) {
+	public Deals(String dealManufacturer, String dealModel, long carBasePrice, long carMsp, String incentiveRange) {
 		this.dealManufacturer = dealManufacturer;
 		this.dealModel = dealModel;
 		this.carBasePrice = carBasePrice;
 		this.carMsp = carMsp;
 		this.incentiveRange = incentiveRange;
-		this.dealStatus = dealStatus;
+		this.dealStatus = "nil";
 	}
 
 	public String getDealManufacturer() {
