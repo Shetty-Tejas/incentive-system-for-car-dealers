@@ -93,5 +93,25 @@ public class DealerService {
 		return dealsRepo.save(dealsObj);
 	}
 	
-	//
+	// Redefine Deals
+	public Deals redefineDeals(String dealModel, String incentiveRange) {
+		cObj = carRepo.findById(dealModel).get();
+		dealsObj = dealsRepo.findById(dealModel).get();
+		dealsObj.setIncentiveRange(incentiveRange);
+		return dealsRepo.save(dealsObj);
+	}
+	
+	// Delete Deals
+	public String deleteDeals(String dealModel) {
+		dealsObj = dealsRepo.findById(dealModel).get();
+		String deal = dealsObj.toString();
+		dealsRepo.delete(dealsObj);
+		return deal;
+	}
+	
+	// Record Incentive
+	
+	// Fetch all deals
+	
+	
 }
