@@ -6,7 +6,7 @@ import javax.persistence.*;
 @Table(name = "dealer_table")
 public class Dealer {
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "dealer_id")
 	private int dealerId;
 	@Column(name = "dealer_name")
@@ -22,7 +22,6 @@ public class Dealer {
 	}
 
 	public Dealer(String dealerName, long dealerContact, String dealerPass) {
-		super();
 		this.dealerName = dealerName;
 		this.dealerContact = dealerContact;
 		this.dealerPass = dealerPass;

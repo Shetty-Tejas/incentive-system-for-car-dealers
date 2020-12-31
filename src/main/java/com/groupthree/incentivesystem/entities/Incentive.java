@@ -1,14 +1,19 @@
 package com.groupthree.incentivesystem.entities;
 
-import java.time.LocalDate;
+import java.util.Date;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
 @Entity
 @Table(name = "Incentive_Records")
 public class Incentive {
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "incentive_id")
 	private int incentiveId;
 	@Column(name = "customer_contact")
@@ -16,7 +21,7 @@ public class Incentive {
 	@Column(name = "customer_name")
 	private String customerName;
 	@Column(name = "purchase_date")
-	private LocalDate purchaseDate;
+	private Date purchaseDate;
 	@Column(name = "model_purchased")
 	private String carModel;
 	@Column(name = "dealer_id")
@@ -26,9 +31,27 @@ public class Incentive {
 	@Column(name = "total_cost")
 	private long totalCost;
 	@Column(name = "percent_received")
-	private int incentivePercent;
+	private double incentivePercent;
 	@Column(name = "incentive_received")
 	private long incentiveGot;
+
+	public Incentive() {
+
+	}
+
+	public Incentive(long customerContact, String customerName, Date purchaseDate, String carModel, int dealerId,
+			String dealerName, long totalCost, double incentivePercent, long incentiveGot) {
+		super();
+		this.customerContact = customerContact;
+		this.customerName = customerName;
+		this.purchaseDate = purchaseDate;
+		this.carModel = carModel;
+		this.dealerId = dealerId;
+		this.dealerName = dealerName;
+		this.totalCost = totalCost;
+		this.incentivePercent = incentivePercent;
+		this.incentiveGot = incentiveGot;
+	}
 
 	public int getIncentiveId() {
 		return incentiveId;
@@ -54,11 +77,11 @@ public class Incentive {
 		this.customerName = customerName;
 	}
 
-	public LocalDate getPurchaseDate() {
+	public Date getPurchaseDate() {
 		return purchaseDate;
 	}
 
-	public void setPurchaseDate(LocalDate purchaseDate) {
+	public void setPurchaseDate(Date purchaseDate) {
 		this.purchaseDate = purchaseDate;
 	}
 
@@ -94,11 +117,11 @@ public class Incentive {
 		this.totalCost = totalCost;
 	}
 
-	public int getIncentivePercent() {
+	public double getIncentivePercent() {
 		return incentivePercent;
 	}
 
-	public void setIncentivePercent(int incentivePercent) {
+	public void setIncentivePercent(double incentivePercent) {
 		this.incentivePercent = incentivePercent;
 	}
 

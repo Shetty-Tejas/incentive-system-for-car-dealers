@@ -2,6 +2,8 @@ package com.groupthree.incentivesystem.services;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +16,9 @@ import com.groupthree.incentivesystem.repositories.ManufacturerRepository;
 
 @Service
 public class ManufacturerService {
+	
+	private final Logger logger = LoggerFactory.getLogger(ManufacturerService.class);	
+	
 	Manufacturer mObj;
 	Car cObj;
 	Deals dObj;
@@ -24,63 +29,22 @@ public class ManufacturerService {
 	@Autowired
 	DealsRepository dealsRepo;
 
-	private final String passwordPattern = "^[a-zA-Z0-9|_|$|\\.|@]+$";
-	private final String namePattern = "^[a-zA-Z| ]{3,34}$";
-	private final String emailPattern = "^([a-z]+([\\._]\1{2})?)+@[a-z]+[\\.][a-z]{2,5}$";
-
-	// Login Validator
-	public boolean validator(int mId, String password) {
-		if (password.matches(passwordPattern) && manRepo.existsById(mId)) return true;
-		else return false;
-	}
-
-	// Registration Validator
-	public boolean validator(String mName, String mEmail, String mPass) {
-		if (mPass.matches(passwordPattern) && 
-				mName.matches(namePattern) && 
-				mEmail.matches(emailPattern) && 
-				!manRepo.existsByManufacturerName(mName))
-			return true;
-		else
-			return false;
-	}
-
-	// Insertion Validator
-	public boolean validator(int mId, String carModel, long carBasePrice, long carMsp) {
-		if (manRepo.existsById(mId) && carModel.matches("^\\w+$") && !carRepo.existsById(carModel)
-				&& (carBasePrice < carMsp))
-			return true;
-		else
-			return false;
-	}
-
-	// Insertion Validator mID only
-	public boolean validator(int mId) {
-		if (manRepo.existsById(mId))
-			return true;
-		else
-			return false;
-	}
-
-	// Status Update Validator
-	public boolean validator(String carModel) {
-		if (dealsRepo.existsById(carModel))
-			return true;
-		else
-			return false;
-	}
-
 	// Login
 	public boolean manufacturerLogin(int mId, String password) {
 		mObj = manRepo.findById(mId).get();
-		if (mObj.getManufacturerPass().equals(password))
+		if (mObj.getManufacturerPass().equals(password)) {
+			logger.info("Manufacturer Login Successful");
 			return true;
-		else
+		}
+		else {
+			logger.info("Manufacturer Login Unsuccessful ");
 			return false;
+		}
 	}
 
 	// Register
 	public Manufacturer manufacturerRegister(String mName, String mEmail, String mPass) {
+		logger.info("Manufaturer Registration");
 		mObj = new Manufacturer(mName, mEmail, mPass);
 		return manRepo.save(mObj);
 	}
@@ -88,15 +52,20 @@ public class ManufacturerService {
 	// Insert Car
 	public Car insertCar(int mId, String carModel, long carBasePrice, long carMsp) {
 		if(!carRepo.existsById(carModel)) {
+			logger.info("Insert Car Details");
 			String manufacturer = fetchManufacturerName(mId);
 			cObj = new Car(manufacturer, carModel, carBasePrice, carMsp);
 			return carRepo.save(cObj);
 		}
-		else return new Car(null, null, 0l, 0l);
+		else {
+			logger.info("Car Deatils not inserted");
+			return new Car(null, null, 0l, 0l);
+		}
 	}
 
 	// Deal Status Update
 	public Deals updateDealStatus(String carModel, boolean flag) {
+		logger.info("Update Deal Status");
 		dObj = dealsRepo.findById(carModel).get();
 		String status = (flag) ? "Approved" : "Rejected";
 		dObj.setStatus(status);
@@ -105,12 +74,14 @@ public class ManufacturerService {
 
 	// Find all deals for a manufacturer
 	public List<Deals> fetchAllDeals(int mId) {
+		logger.info("Find all Deals or a manufacturer");
 		String manufacturer = fetchManufacturerName(mId);
 		return dealsRepo.findByDealManufacturer(manufacturer);
 	}
 
 	// Find manufacturer name
 	public String fetchManufacturerName(int mId) {
+		logger.info("Find Manufacturer Name by ID");
 		return manRepo.findById(mId).get().getManufacturerName();
 	}
 	

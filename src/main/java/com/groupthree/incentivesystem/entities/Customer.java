@@ -1,14 +1,19 @@
 package com.groupthree.incentivesystem.entities;
 
-import java.time.LocalDate;
+import java.util.Date;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
 @Entity
 @Table(name = "customer_records")
 public class Customer {
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "customer_id")
 	private int customerId;
 	@Column(name = "customer_contact")
@@ -16,7 +21,7 @@ public class Customer {
 	@Column(name = "customer_name")
 	private String customerName;
 	@Column(name = "purchase_date")
-	private LocalDate customerPurchaseDate;
+	private Date customerPurchaseDate;
 	@Column(name = "purchased_manufacturer")
 	private String purchasedCarManf;
 	@Column(name = "purchased_model")
@@ -25,6 +30,21 @@ public class Customer {
 	private int dealerId;
 	@Column(name = "total_cost")
 	private long totalCost;
+
+	public Customer() {
+
+	}
+
+	public Customer(long customerContact, String customerName, Date customerPurchaseDate, String purchasedCarManf,
+			String purchasedCar, int dealerId, long totalCost) {
+		this.customerContact = customerContact;
+		this.customerName = customerName;
+		this.customerPurchaseDate = customerPurchaseDate;
+		this.purchasedCarManf = purchasedCarManf;
+		this.purchasedCar = purchasedCar;
+		this.dealerId = dealerId;
+		this.totalCost = totalCost;
+	}
 
 	public int getCustomerId() {
 		return customerId;
@@ -50,11 +70,11 @@ public class Customer {
 		this.customerName = customerName;
 	}
 
-	public LocalDate getCustomerPurchaseDate() {
+	public Date getCustomerPurchaseDate() {
 		return customerPurchaseDate;
 	}
 
-	public void setCustomerPurchaseDate(LocalDate customerPurchaseDate) {
+	public void setCustomerPurchaseDate(Date customerPurchaseDate) {
 		this.customerPurchaseDate = customerPurchaseDate;
 	}
 

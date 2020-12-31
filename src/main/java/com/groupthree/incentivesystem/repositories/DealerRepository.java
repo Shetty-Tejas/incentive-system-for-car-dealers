@@ -8,4 +8,5 @@ import com.groupthree.incentivesystem.entities.Dealer;
 @Repository
 public interface DealerRepository extends JpaRepository<Dealer, Integer>{
 	public boolean existsByDealerName(String name);
+	public boolean existsByDealerContact(long contact);
 }
