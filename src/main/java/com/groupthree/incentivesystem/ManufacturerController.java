@@ -17,6 +17,11 @@ import com.groupthree.incentivesystem.entities.Manufacturer;
 import com.groupthree.incentivesystem.services.ManufacturerService;
 import com.groupthree.incentivesystem.services.ValidatorService;
 
+/**
+ * This is a Rest Controller for the Manufacturer usecases.
+ * @author Tejas
+ *
+ */
 @RestController
 public class ManufacturerController {
 
@@ -27,9 +32,15 @@ public class ManufacturerController {
 	@Autowired
 	ValidatorService validatorService;
 
+	/**
+	 * This method is used to log in the manufacturer.
+	 * @param mId First parameter for the method, accepts the Manufacturer ID.
+	 * @param mPass Second parameter for the method, accepts the Manufacturer Password.
+	 * @return
+	 */
 	@PostMapping("/manufacturer/login")
 	public String manufacturerLogin(@RequestParam int mId, @RequestParam String mPass) {
-		logger.info("Manufacturer Login");
+		logger.info("Manufacturer Login requested by the Manufacturer ID: " + mId);
 		if (validatorService.manufacturerIdValidation(mId) && 
 				validatorService.passValidator(mPass)) {
 			if (manufacturerService.manufacturerLogin(mId, mPass))
@@ -40,10 +51,17 @@ public class ManufacturerController {
 			return "Validation failed!";
 	}
 
+	/**
+	 * This method is used to register the manufacturer.
+	 * @param mName First parameter for the method, accepts the Manufacturer (Company) Name.
+	 * @param mEmail Second parameter for the method, accepts the Manufacturer (Company) Email.
+	 * @param mPass Third parameter for the method, accepts the Dealer Password (Alpha-numeric password with special characters like '$_.@' allowed.
+	 * @return
+	 */
 	@PostMapping("/manufacturer/register")
 	public Manufacturer manufacturerRegister(@RequestParam String mName, @RequestParam String mEmail,
 			@RequestParam String mPass) {
-		logger.info("Manufacturer Registration");
+		logger.info("Manufacturer Registration registered by Manufacturer Name: " + mName);
 		if (validatorService.nameValidator(mName) && 
 				validatorService.manufacturerEmailValidator(mEmail) && 
 				validatorService.passValidator(mPass) && 
@@ -53,10 +71,18 @@ public class ManufacturerController {
 			return new Manufacturer(null, null, null);
 	}
 
+	/**
+	 * This method is used by a logged in manufacturer to insert new car in the car repository.
+	 * @param mId First parameter for the method, accepts the manufacturer ID.
+	 * @param carModel Second parameter for the method, accepts the car model. Can be alphanumeric and shouldn't be existing in car repository already.
+	 * @param carBasePrice Third parameter for the method, accepts the base price for the corresponding car model.
+	 * @param carMsp Fourth parameter for the method, accepts the maximum selling price for the corresponding car model
+	 * @return
+	 */
 	@PostMapping("/manufacturer/logged/insertCar")
 	public Car insertCar(@RequestParam int mId, @RequestParam String carModel, @RequestParam long carBasePrice,
 			@RequestParam long carMsp) {
-		logger.info("Inserting Car Details");
+		logger.info("Car insertion requested by Manufacturer ID: " + mId);
 		if (validatorService.manufacturerIdValidation(mId) && 
 				!validatorService.carExistsValidator(carModel) && 
 				validatorService.carModelValidation(carModel) && 
@@ -66,28 +92,45 @@ public class ManufacturerController {
 			return new Car(null, null, 0l, 0l);
 	}
 
+	/**
+	 * This method is used by a logged in  manufacturer to alter the status of the deals created by the dealer.
+	 * @param mId First parameter for the method, accepts the manufacturer ID. Used for logging purposes.
+	 * @param carModel Second parameter for the method, accepts the carModel. Should be present in the deals repository.
+	 * @param flag Third parameter for the method, accepts either "true" or "false".
+	 * @return
+	 */
 	@PostMapping("/manufacturer/logged/alterStatus")
-	public Deals alterStatus(@RequestParam String carModel, @RequestParam boolean flag) {
+	public Deals alterStatus(@RequestParam int mId, @RequestParam String carModel, @RequestParam boolean flag) {
+		logger.info("Status alteration requested by the Manufacturer ID: " + mId);
 		if (validatorService.dealExistsValidator(carModel)) {
-			logger.info("Altering Status");
 			return manufacturerService.updateDealStatus(carModel, flag);
 		} else
 			return new Deals(null, null, 0l, 0l, null);
 	}
 
+	/**
+	 * This method is used by a logged in manufacturer to fetch all the deals from the deals repository for the corresponding manufacturer.
+	 * @param mId Only parameter for the method, accepts the manufacturer ID.
+	 * @return
+	 */
 	@GetMapping("/manufacturer/logged/fetchAllDeals")
 	public List<Deals> fetchAllDeals(@RequestParam int mId) {
+		logger.info("Deal fetch requested by Manufacturer ID: " + mId);
 		if (validatorService.manufacturerIdValidation(mId)) {
-			logger.info("Fetching All Deals");
 			return manufacturerService.fetchAllDeals(mId);
 		} else
 			return new LinkedList<>();
 	}
 
+	/**
+	 * This method is used by a logged in manufacturer to fetch all the cars from the cars repository for the corresponding manufacturer.
+	 * @param mId Only parameter for the method, accepts the manufacturer ID.
+	 * @return
+	 */
 	@GetMapping("/manufacturer/logged/fetchAllCars")
 	public List<Car> fetchAllCars(@RequestParam int mId) {
+		logger.info("Car fetch requested by Manufacturer ID: " + mId);
 		if (validatorService.manufacturerIdValidation(mId)) {
-			logger.info("Fetching all Cars Details");
 			return manufacturerService.fetchAllCars(mId);
 		} else
 			return new LinkedList<>();

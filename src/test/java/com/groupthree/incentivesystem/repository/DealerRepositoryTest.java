@@ -1,4 +1,6 @@
-package com.groupthree.incentivesystem.test.repository;
+package com.groupthree.incentivesystem.repository;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Order;
@@ -27,12 +29,14 @@ public class DealerRepositoryTest {
 	@Autowired
 	private DealerRepository dealerRepo;
 	
-	@Test
-	@Order(1)
+	/*@Test
 	public void testExistsByDealerName() {
-		Dealer dealer = new Dealer();
-		dealer.setDealerName("Snehal");
-	}
+		Dealer dealer = existsByDealerName();
+		Dealer savedInDb = entityManager.persist(dealer);
+		Dealer getFromDb = dealerRepo.getOne(savedInDb.getDealerId());
+		
+		assertThat(getFromDb).isEqualTo(savedInDb);
+	}*/
 	
 	@Test
 	@Order(2)

@@ -30,45 +30,45 @@ public class ValidatorService {
 	DealsRepository dealsRepo;
 
 	private final String passwordPattern = "^[a-zA-Z0-9|_|$|\\.|@]+$";
-	private final String namePattern = "^[a-zA-Z ]{3,34}$"; // Tweak this
+	private final String namePattern = "^[a-zA-Z ]{3,34}$"; // Tweak this and change the javadocs.
 	private final String contactPattern = "^[987][0-9]{9}$";
-	private final String emailPattern = "^([a-z]+([\\._]\1{2})?)+@[a-z]+[\\.][a-z]{2,5}$"; //tweak
+	private final String emailPattern = "^([a-z]+([\\._]\1{2})?)+@[a-z]+[\\.][a-z]{2,5}$"; // Tweak this and change the javadocs.
 
 	/* Dealer Validations */
 
 	// Validates Dealer Id
 	public boolean dealerIdValidator(int dId) {
-		logger.info("Dealer ID Validated");
+		logger.info("Dealer ID Validation in process");
 		return dealerRepo.existsById(dId);
 	}
 
 	// Validates Dealer / Manufacturer Password
 	public boolean passValidator(String pass) {
-		logger.info("Password Validated");
+		logger.info("Password Validation in process");
 		return pass.matches(passwordPattern);
 	}
 
 	// Validated Dealer / Customer / Manufacturer Name
 	public boolean nameValidator(String name) {
-		logger.info("Name Validated");
+		logger.info("Name Validation in process");
 		return name.matches(namePattern);
 	}
 
 	// Validated Dealer / Customer Contact
 	public boolean contactValidator(long contact) {
-		logger.info("Contact Validated");
+		logger.info("Contact Validation in process");
 		return String.valueOf(contact).matches(contactPattern);
 	}
 	
 	// Check if contact number exists for dealer
 	public boolean checkIfContactExists(long contact) {
-		logger.info("Checking if Contact exists or not");
+		logger.info("Checking if contact exists or not");
 		return !dealerRepo.existsByDealerContact(contact);
 	}
 
 	// Validates whether the car exists
 	public boolean carExistsValidator(String dealModel) {
-		logger.info("Checking wether Car Exists");
+		logger.info("Checking whether Car Exists");
 		return carRepo.existsById(dealModel);
 	}
 
@@ -116,13 +116,13 @@ public class ValidatorService {
 	
 	// Manufacturer Id validation
 	public boolean manufacturerIdValidation(int mId) {
-		logger.info("Manufacturer ID Validation");
+		logger.info("Manufacturer ID Validation in process");
 		return manRepo.existsById(mId);
 	}
 
 	// Manufacturer Email validation
 	public boolean manufacturerEmailValidator(String mEmail) {
-		logger.info("Manufacturer Email Validation");
+		logger.info("Manufacturer Email Validation in process");
 		return mEmail.matches(emailPattern);
 	}
 	
@@ -134,13 +134,13 @@ public class ValidatorService {
 	
 	// Car modelname validator
 	public boolean carModelValidation(String model) {
-		logger.info("Chck if Car Already Exists");
+		logger.info("Check if Car Already Exists");
 		return model.matches("^\\w+$");
 	}
 	
 	// Car price validation
 	public boolean carPriceValidation(long carBasePrice, long carMsp) {
-		logger.info("Car Price Validation");
+		logger.info("Car Price Validation in process");
 		return (carBasePrice < carMsp);
 	}
 }

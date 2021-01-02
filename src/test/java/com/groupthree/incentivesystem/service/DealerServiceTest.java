@@ -1,4 +1,4 @@
-package com.groupthree.incentivesystem.test.service;
+package com.groupthree.incentivesystem.service;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
