@@ -19,6 +19,7 @@ import com.groupthree.incentivesystem.services.ValidatorService;
 
 /**
  * This is a Rest Controller for the Manufacturer usecases.
+ * 
  * @author Tejas
  *
  */
@@ -26,7 +27,7 @@ import com.groupthree.incentivesystem.services.ValidatorService;
 public class ManufacturerController {
 
 	private static final Logger logger = LoggerFactory.getLogger("ManufacturerController.class");
-	
+
 	@Autowired
 	ManufacturerService manufacturerService;
 	@Autowired
@@ -34,15 +35,16 @@ public class ManufacturerController {
 
 	/**
 	 * This method is used to log in the manufacturer.
-	 * @param mId First parameter for the method, accepts the Manufacturer ID.
-	 * @param mPass Second parameter for the method, accepts the Manufacturer Password.
+	 * 
+	 * @param mId   First parameter for the method, accepts the Manufacturer ID.
+	 * @param mPass Second parameter for the method, accepts the Manufacturer
+	 *              Password.
 	 * @return
 	 */
 	@PostMapping("/manufacturer/login")
 	public String manufacturerLogin(@RequestParam int mId, @RequestParam String mPass) {
 		logger.info("Manufacturer Login requested by the Manufacturer ID: " + mId);
-		if (validatorService.manufacturerIdValidation(mId) && 
-				validatorService.passValidator(mPass)) {
+		if (validatorService.manufacturerIdValidation(mId) && validatorService.passValidator(mPass)) {
 			if (manufacturerService.manufacturerLogin(mId, mPass))
 				return "Logged in!";
 			else
@@ -53,50 +55,64 @@ public class ManufacturerController {
 
 	/**
 	 * This method is used to register the manufacturer.
-	 * @param mName First parameter for the method, accepts the Manufacturer (Company) Name.
-	 * @param mEmail Second parameter for the method, accepts the Manufacturer (Company) Email.
-	 * @param mPass Third parameter for the method, accepts the Dealer Password (Alpha-numeric password with special characters like '$_.@' allowed.
+	 * 
+	 * @param mName  First parameter for the method, accepts the Manufacturer
+	 *               (Company) Name.
+	 * @param mEmail Second parameter for the method, accepts the Manufacturer
+	 *               (Company) Email.
+	 * @param mPass  Third parameter for the method, accepts the Dealer Password
+	 *               (Alpha-numeric password with special characters like '$_.@'
+	 *               allowed.
 	 * @return
 	 */
 	@PostMapping("/manufacturer/register")
 	public Manufacturer manufacturerRegister(@RequestParam String mName, @RequestParam String mEmail,
 			@RequestParam String mPass) {
 		logger.info("Manufacturer Registration registered by Manufacturer Name: " + mName);
-		if (validatorService.nameValidator(mName) && 
-				validatorService.manufacturerEmailValidator(mEmail) && 
-				validatorService.passValidator(mPass) && 
-				validatorService.manufacturerExistsValidation(mName)) {
+		if (validatorService.nameValidator(mName) && validatorService.manufacturerEmailValidator(mEmail)
+				&& validatorService.passValidator(mPass) && validatorService.manufacturerExistsValidation(mName)) {
 			return manufacturerService.manufacturerRegister(mName, mEmail, mPass);
 		} else
 			return new Manufacturer(null, null, null);
 	}
 
 	/**
-	 * This method is used by a logged in manufacturer to insert new car in the car repository.
-	 * @param mId First parameter for the method, accepts the manufacturer ID.
-	 * @param carModel Second parameter for the method, accepts the car model. Can be alphanumeric and shouldn't be existing in car repository already.
-	 * @param carBasePrice Third parameter for the method, accepts the base price for the corresponding car model.
-	 * @param carMsp Fourth parameter for the method, accepts the maximum selling price for the corresponding car model
+	 * This method is used by a logged in manufacturer to insert new car in the car
+	 * repository.
+	 * 
+	 * @param mId          First parameter for the method, accepts the manufacturer
+	 *                     ID.
+	 * @param carModel     Second parameter for the method, accepts the car model.
+	 *                     Can be alphanumeric and shouldn't be existing in car
+	 *                     repository already.
+	 * @param carBasePrice Third parameter for the method, accepts the base price
+	 *                     for the corresponding car model.
+	 * @param carMsp       Fourth parameter for the method, accepts the maximum
+	 *                     selling price for the corresponding car model
 	 * @return
 	 */
 	@PostMapping("/manufacturer/logged/insertCar")
 	public Car insertCar(@RequestParam int mId, @RequestParam String carModel, @RequestParam long carBasePrice,
 			@RequestParam long carMsp) {
 		logger.info("Car insertion requested by Manufacturer ID: " + mId);
-		if (validatorService.manufacturerIdValidation(mId) && 
-				!validatorService.carExistsValidator(carModel) && 
-				validatorService.carModelValidation(carModel) && 
-				validatorService.carPriceValidation(carBasePrice, carMsp)) {
+		if (validatorService.manufacturerIdValidation(mId) && !validatorService.carExistsValidator(carModel)
+				&& validatorService.carModelValidation(carModel)
+				&& validatorService.carPriceValidation(carBasePrice, carMsp)) {
 			return manufacturerService.insertCar(mId, carModel, carBasePrice, carMsp);
 		} else
 			return new Car(null, null, 0l, 0l);
 	}
 
 	/**
-	 * This method is used by a logged in  manufacturer to alter the status of the deals created by the dealer.
-	 * @param mId First parameter for the method, accepts the manufacturer ID. Used for logging purposes.
-	 * @param carModel Second parameter for the method, accepts the carModel. Should be present in the deals repository.
-	 * @param flag Third parameter for the method, accepts either "true" or "false".
+	 * This method is used by a logged in manufacturer to alter the status of the
+	 * deals created by the dealer.
+	 * 
+	 * @param mId      First parameter for the method, accepts the manufacturer ID.
+	 *                 Used for logging purposes.
+	 * @param carModel Second parameter for the method, accepts the carModel. Should
+	 *                 be present in the deals repository.
+	 * @param flag     Third parameter for the method, accepts either "true" or
+	 *                 "false".
 	 * @return
 	 */
 	@PostMapping("/manufacturer/logged/alterStatus")
@@ -109,7 +125,9 @@ public class ManufacturerController {
 	}
 
 	/**
-	 * This method is used by a logged in manufacturer to fetch all the deals from the deals repository for the corresponding manufacturer.
+	 * This method is used by a logged in manufacturer to fetch all the deals from
+	 * the deals repository for the corresponding manufacturer.
+	 * 
 	 * @param mId Only parameter for the method, accepts the manufacturer ID.
 	 * @return
 	 */
@@ -123,7 +141,9 @@ public class ManufacturerController {
 	}
 
 	/**
-	 * This method is used by a logged in manufacturer to fetch all the cars from the cars repository for the corresponding manufacturer.
+	 * This method is used by a logged in manufacturer to fetch all the cars from
+	 * the cars repository for the corresponding manufacturer.
+	 * 
 	 * @param mId Only parameter for the method, accepts the manufacturer ID.
 	 * @return
 	 */

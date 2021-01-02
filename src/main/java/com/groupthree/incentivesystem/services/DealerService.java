@@ -25,9 +25,10 @@ import com.groupthree.incentivesystem.repositories.IncentiveRepository;
 
 @Service
 public class DealerService {
-	
+
 	private static final Logger logger = LoggerFactory.getLogger("CustomerService.class");
-	
+	private String validationSuccess = "Validation Successful";
+
 	private Dealer dealerObj;
 	private Car carObj;
 	private Deals dealsObj;
@@ -47,20 +48,38 @@ public class DealerService {
 	@Autowired
 	private HolidayRepository holidayRepo;
 
-	// Convert to date from string
+	/**
+	 * This method converts the date string of format 'yyyy-mm-dd' to LocalDate
+	 * type.
+	 * 
+	 * @param date Only parameter for the method, accepts the string date.
+	 * @return LocalDate type of 'date'.
+	 */
 	public LocalDate dateConverter(String date) {
-		logger.info("Date Conversion");
+		logger.info("Converting type string to date");
 		try {
 			DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 			return LocalDate.parse(date, format);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			return null;
 		}
-		
+
 	}
 
-	// Holiday and incentive range finder.
+	/**
+	 * This method finds the incentive percent based on holiday. If a holiday falls
+	 * on the day the car is brought, max incentive bonus (100%) from the range is
+	 * given, if one day away, 75% bonus from the range is given, two days away then
+	 * 50% and if three days away then 25% and if more than three days away, then
+	 * the lowest incentive percent(0%) from the range is given.
+	 * 
+	 * @param date   First parameter for the method, accepts the LocalDate date.
+	 * @param incMin Second parameter for the method, accepts the lower limit of the
+	 *               incentive range.
+	 * @param incMax Third parameter for the method, accepts the upper limit of the
+	 *               incentive range.
+	 * @return The final incentive bonus.
+	 */
 	public double incentiveFind(LocalDate date, int incMin, int incMax) {
 		logger.info("Holiday and Incentive range finder.");
 		int count = -3;
@@ -80,9 +99,15 @@ public class DealerService {
 		return (double) incMin + inc;
 	}
 
-	// Dealer Login
+	/**
+	 * This method is used to log in dealers
+	 * 
+	 * @param dId   First parameter for the method, accepts the dealer ID.
+	 * @param dPass Second parameter for the method, accepts the dealer password.
+	 * @return True if successful log in, else False.
+	 */
 	public boolean dealerLogin(int dId, String dPass) {
-		logger.info("Dealer Login");
+		logger.info(validationSuccess + "... Logging in!");
 		dealerObj = dealerRepo.findById(dId).get();
 		if (dealerObj.getDealerPass().equals(dPass))
 			return true;
@@ -90,25 +115,47 @@ public class DealerService {
 			return false;
 	}
 
-	// Dealer Registration
+	/**
+	 * This method is used to register dealers.
+	 * 
+	 * @param dName    First parameter for the method, accepts the dealer name.
+	 * @param dContact Second parameter for the method, accepts the dealer contact
+	 *                 number.
+	 * @param dPass    Third parameter for the method, accepts the dealer password.
+	 * @return Newly created Dealer
+	 */
 	public Dealer dealerRegistration(String dName, long dContact, String dPass) {
-		logger.info("Dealer Registration");
+		logger.info(validationSuccess + "... Registering!");
 		dealerObj = new Dealer(dName, dContact, dPass);
 		return dealerRepo.save(dealerObj);
 	}
 
-	// Create Deals
+	/**
+	 * This method is used by logged-in dealers to create new deals.
+	 * 
+	 * @param dealModel      First parameter for the method, accepts the car model.
+	 * @param incentiveRange Second parameter for the method, accepts the incentive
+	 *                       range string.
+	 * @return Newly created Deal
+	 */
 	public Deals createDeals(String dealModel, String incentiveRange) {
-		logger.info("Creating Deals");
+		logger.info(validationSuccess + "... Creating deal!");
 		carObj = carRepo.findById(dealModel).get();
 		dealsObj = new Deals(carObj.getCarManufacturer(), dealModel, carObj.getCarBasePrice(), carObj.getCarMsp(),
 				incentiveRange);
 		return dealsRepo.save(dealsObj);
 	}
 
-	// Redefine Deals
+	/**
+	 * This method is used by logged-in dealers to redefine pre-existing deals.
+	 * 
+	 * @param dealModel      First parameter for the method, accepts the car model.
+	 * @param incentiveRange Second parameter for the method, accepts the incentive
+	 *                       range string.
+	 * @return Redefined Deal
+	 */
 	public Deals redefineDeals(String dealModel, String incentiveRange) {
-		logger.info("Redefining Deals");
+		logger.info(validationSuccess + "... Redefining pre-existing deal!");
 		carObj = carRepo.findById(dealModel).get();
 		dealsObj = dealsRepo.findById(dealModel).get();
 		dealsObj.setIncentiveRange(incentiveRange);
@@ -116,25 +163,42 @@ public class DealerService {
 		return dealsRepo.save(dealsObj);
 	}
 
-	// Delete Deals
+	/**
+	 * This method is used by logged-in dealers to delete an existing deal.
+	 * 
+	 * @param dealModel Only parameter for the method, accepts the car model.
+	 * @return Deleted deal.
+	 */
 	public String deleteDeals(String dealModel) {
-		logger.info("Deleting Deals");
+		logger.info(validationSuccess + "... Deleting deal!");
 		dealsObj = dealsRepo.findById(dealModel).get();
 		String deal = dealsObj.toString();
 		dealsRepo.delete(dealsObj);
 		return "Deleted deal: " + deal;
 	}
 
-	// Record Incentive
+	/**
+	 * This method is used by logged-in dealers to record incentive details.
+	 * 
+	 * @param dId       First parameter for this method, accepts the dealer ID.
+	 * @param contactNo Second parameter for this method, accepts the customer
+	 *                  contact number.
+	 * @param custName  Third parameter for this method, accepts the customer name.
+	 * @param date      Fourth parameter for this method, accepts the date.
+	 * @param model     Fifth parameter for this method, accepts the car model.
+	 * @return Creates incentive and customer records and updates incentive of the
+	 *         dealer.
+	 */
 	public String recordIncentives(int dId, long contactNo, String custName, LocalDate date, String model) {
+		logger.info(validationSuccess + "... Recording details!");
 		String result = "";
 		dealsObj = dealsRepo.findById(model).get();
 		dealerObj = dealerRepo.findById(dId).get();
 
-		long cost = dealsObj.getCarMsp();
 		String manufacturer = dealsObj.getDealManufacturer();
 		String incentiveRange = dealsObj.getIncentiveRange();
 		String dealerName = dealerObj.getDealerName();
+		long cost = dealsObj.getCarMsp();
 		long existingIncentive = dealerObj.getDealerIncentive();
 
 		int minInc = Integer.parseInt(incentiveRange.substring(0, incentiveRange.indexOf('-')));
@@ -155,25 +219,44 @@ public class DealerService {
 		return result;
 	}
 
-	// Fetch all deals
+	/**
+	 * This method is used to fetch all deals.
+	 * 
+	 * @return List of all deals
+	 */
 	public List<Deals> fetchAllDeals() {
 		logger.info("List of All Deals");
 		return dealsRepo.findAll();
 	}
-	
-	// Fetch incentive records for an id
+
+	/**
+	 * This method is used to fetch all incentive records by dealer ID.
+	 * 
+	 * @param dId Only parameter for the record, accepts the dealer ID.
+	 * @return List of incentive records for corresponding dealer.
+	 */
 	public List<Incentive> fetchIncentiveRecordsById(int dId) {
 		logger.info("Fetching Incentive Records for and ID");
 		return incentiveRepo.findByDealerId(dId);
 	}
-	
-	// Fetch customer records for an id
+
+	/**
+	 * This method is used to fetch all customer records by dealer ID.
+	 * 
+	 * @param dId Only parameter for the method, accepts the dealer ID.
+	 * @return List of customer records for corresponding dealer.
+	 */
 	public List<Customer> fetchCustomerRecordsById(int dId) {
 		logger.info("Fetching Customer Records by ID");
 		return customerRepo.findByDealerId(dId);
 	}
-	
-	// Fetch customer records by contact number of customer
+
+	/**
+	 * This method is used to fetch all customer records by contact.
+	 * 
+	 * @param contact Only parameter for the method, accepts the customer contact.
+	 * @return List of customer records for the corresponding contact.
+	 */
 	public List<Customer> fetchCustomerRecordsByContact(long contact) {
 		logger.info("Fetching Customer records by Contact ");
 		return customerRepo.findByCustomerContact(contact);

@@ -21,6 +21,7 @@ import com.groupthree.incentivesystem.services.ValidatorService;
 
 /**
  * This is a Rest Controller for the Dealer usecases.
+ * 
  * @author Tejas
  *
  */
@@ -28,7 +29,7 @@ import com.groupthree.incentivesystem.services.ValidatorService;
 public class DealerController {
 
 	private static final Logger logger = LoggerFactory.getLogger("DealerController.class");
-	
+
 	@Autowired
 	DealerService dealerService;
 	@Autowired
@@ -36,9 +37,10 @@ public class DealerController {
 
 	/**
 	 * This method is used to log in the dealer.
-	 * @param dId First parameter for the method, accepts the Dealer ID.
+	 * 
+	 * @param dId   First parameter for the method, accepts the Dealer ID.
 	 * @param dPass Second parameter for the method, accepts the Dealer Password.
-	 * @return 
+	 * @return
 	 */
 	@PostMapping("/dealer/login")
 	public String dealerLogin(@RequestParam int dId, @RequestParam String dPass) {
@@ -54,9 +56,13 @@ public class DealerController {
 
 	/**
 	 * This method is used to register the dealer.
-	 * @param dName First parameter for the method, accepts the Dealer Name.
-	 * @param dContact Second parameter for the method, accepts the Dealer contact number (10 digits at max and should start with 7, 8 or 9).
-	 * @param dPass Third parameter for the method, accepts the Dealer Password (Alpha-numeric password with special characters like '$_.@' allowed.
+	 * 
+	 * @param dName    First parameter for the method, accepts the Dealer Name.
+	 * @param dContact Second parameter for the method, accepts the Dealer contact
+	 *                 number (10 digits at max and should start with 7, 8 or 9).
+	 * @param dPass    Third parameter for the method, accepts the Dealer Password
+	 *                 (Alpha-numeric password with special characters like '$_.@'
+	 *                 allowed.
 	 * @return
 	 */
 	@PostMapping("/dealer/register")
@@ -72,13 +78,20 @@ public class DealerController {
 
 	/**
 	 * This method is used by a logged in dealer to create deals.
-	 * @param dId First parameter for the method, accepts the dealer ID by whom the deal is created. Used for logging purposes.
-	 * @param dealModel Second parameter for the method, accepts the car model for which the deal is created. Should be available in the car repository.
-	 * @param incentiveRange Third parameter for the method, accepts the incentive percent range, which is in the format "{min}-{max}" where min and max are percent between 1 - 100. 
+	 * 
+	 * @param dId            First parameter for the method, accepts the dealer ID
+	 *                       by whom the deal is created. Used for logging purposes.
+	 * @param dealModel      Second parameter for the method, accepts the car model
+	 *                       for which the deal is created. Should be available in
+	 *                       the car repository.
+	 * @param incentiveRange Third parameter for the method, accepts the incentive
+	 *                       percent range, which is in the format "{min}-{max}"
+	 *                       where min and max are percent between 1 - 100.
 	 * @return
 	 */
 	@PostMapping("/dealer/logged/createDeals")
-	public Deals createDeals(@RequestParam int dId, @RequestParam String dealModel, @RequestParam String incentiveRange) {
+	public Deals createDeals(@RequestParam int dId, @RequestParam String dealModel,
+			@RequestParam String incentiveRange) {
 		logger.info("Deal creation requested by Dealer ID: " + dId);
 		if (validatorService.carExistsValidator(dealModel) && validatorService.incentiveRangeValidator(incentiveRange)
 				&& !validatorService.dealExistsValidator(dealModel) && validatorService.dealerIdValidator(dId)) {
@@ -88,14 +101,23 @@ public class DealerController {
 	}
 
 	/**
-	 * This method is used by a logged in dealer to redefine the previous deals if those are rejected by the manufacturer.
-	 * @param dId First parameter for the method, accepts the dealer ID by whom the deal is redefined. Used for logging purposes.
-	 * @param dealModel Second parameter for the method, accepts the car model for which the deal is created. Should be available in the deal repository.
-	 * @param incentiveRange Third parameter for the method, accepts the incentive percent range, which is in the format "{min}-{max}" where min and max are percent between 1 - 100.
+	 * This method is used by a logged in dealer to redefine the previous deals if
+	 * those are rejected by the manufacturer.
+	 * 
+	 * @param dId            First parameter for the method, accepts the dealer ID
+	 *                       by whom the deal is redefined. Used for logging
+	 *                       purposes.
+	 * @param dealModel      Second parameter for the method, accepts the car model
+	 *                       for which the deal is created. Should be available in
+	 *                       the deal repository.
+	 * @param incentiveRange Third parameter for the method, accepts the incentive
+	 *                       percent range, which is in the format "{min}-{max}"
+	 *                       where min and max are percent between 1 - 100.
 	 * @return
 	 */
 	@PostMapping("/dealer/logged/redefineDeals")
-	public Deals redefineDeals(@RequestParam int dId, @RequestParam String dealModel, @RequestParam String incentiveRange) {
+	public Deals redefineDeals(@RequestParam int dId, @RequestParam String dealModel,
+			@RequestParam String incentiveRange) {
 		logger.info("Deal redefinition requested by Dealer ID: " + dId);
 		if (validatorService.carExistsValidator(dealModel) && validatorService.incentiveRangeValidator(incentiveRange)
 				&& validatorService.dealExistsValidator(dealModel) && validatorService.dealerIdValidator(dId)) {
@@ -106,8 +128,11 @@ public class DealerController {
 
 	/**
 	 * This method is used by a logged in dealer to delete unwanted incentive deals.
-	 * @param dId First parameter for the method, accepts the dealer ID by whom the deal is deleted. Used for logging purposes.
-	 * @param dealModel Second parameter for the method, used to delete the deal for inserted model. Should be available in the deal repository
+	 * 
+	 * @param dId       First parameter for the method, accepts the dealer ID by
+	 *                  whom the deal is deleted. Used for logging purposes.
+	 * @param dealModel Second parameter for the method, used to delete the deal for
+	 *                  inserted model. Should be available in the deal repository
 	 * @return
 	 */
 	@PostMapping("/dealer/logged/deleteDeals")
@@ -120,8 +145,11 @@ public class DealerController {
 	}
 
 	/**
-	 * This method is used by a logged in dealer to fetch all deals from the deal repository.
-	 * @param dId First parameter for the method, accepts the dealer ID by whom all the deals are fetched. Used for logging purposes.
+	 * This method is used by a logged in dealer to fetch all deals from the deal
+	 * repository.
+	 * 
+	 * @param dId First parameter for the method, accepts the dealer ID by whom all
+	 *            the deals are fetched. Used for logging purposes.
 	 * @return
 	 */
 	@GetMapping("/dealer/logged/fetchAllDeals")
@@ -131,12 +159,22 @@ public class DealerController {
 	}
 
 	/**
-	 * This method is used by a logged in dealer to record incentive details of the sold cars. This method also records Customer details and adds the incentive earned to the dealer's account.
-	 * @param dId First parameter for the method, accepts the dealer ID by whom the car is sold.
-	 * @param contactNo Second parameter for the method, accepts the customer contact number by whom the car is brought (10 digits at max and should start with 7, 8 or 9).
-	 * @param custName Third parameter for the method, accepts the customer name by whom the car is brought.
-	 * @param date Fourth parameter for the method, accepts the date at which the car is brought. The date can't be in the future.
-	 * @param model Fifth parameter for the method, accepts the car model which is brought by the customer. The status of the car in deal repository should be approved.
+	 * This method is used by a logged in dealer to record incentive details of the
+	 * sold cars. This method also records Customer details and adds the incentive
+	 * earned to the dealer's account.
+	 * 
+	 * @param dId       First parameter for the method, accepts the dealer ID by
+	 *                  whom the car is sold.
+	 * @param contactNo Second parameter for the method, accepts the customer
+	 *                  contact number by whom the car is brought (10 digits at max
+	 *                  and should start with 7, 8 or 9).
+	 * @param custName  Third parameter for the method, accepts the customer name by
+	 *                  whom the car is brought.
+	 * @param date      Fourth parameter for the method, accepts the date at which
+	 *                  the car is brought. The date can't be in the future.
+	 * @param model     Fifth parameter for the method, accepts the car model which
+	 *                  is brought by the customer. The status of the car in deal
+	 *                  repository should be approved.
 	 * @return
 	 */
 	@PostMapping("/dealer/logged/recordIncentive")
@@ -156,13 +194,16 @@ public class DealerController {
 	}
 
 	/**
-	 * This method is used by a logged in dealer to fetch all his/her customer details.
-	 * @param dId Only parameter for the method, accepts the dealer ID to fetch the cars sold by the dealer.
+	 * This method is used by a logged in dealer to fetch all his/her customer
+	 * details.
+	 * 
+	 * @param dId Only parameter for the method, accepts the dealer ID to fetch the
+	 *            cars sold by the dealer.
 	 * @return
 	 */
 	@GetMapping("/dealer/logged/fetchCustomerById")
-	public List<Customer> fetchCustomerById(int dId) {
-		logger.info("Fetching Customer Details by ID");
+	public List<Customer> fetchCustomerById(@RequestParam int dId) {
+		logger.info("Fetching Customer Details by Dealer ID: " + dId);
 		if (validatorService.dealerIdValidator(dId))
 			return dealerService.fetchCustomerRecordsById(dId);
 		else
@@ -170,30 +211,38 @@ public class DealerController {
 	}
 
 	/**
-	 * This method is used by a logged in dealer to fetch a customer details by his/her contact number.
-	 * @param contact Only parameter for the method, accepts the customer contact to fetch the customer's details.
+	 * This method is used by a logged in dealer to fetch a customer details by
+	 * his/her contact number.
+	 * 
+	 * @param dId     First parameter for the method, accepts the dealer ID. Used
+	 *                for logging purposes.
+	 * @param contact Second parameter for the method, accepts the customer contact
+	 *                to fetch the customer's details.
 	 * @return
 	 */
 	@GetMapping("/dealer/logged/fetchCustomerByContact")
-	public List<Customer> fetchCustomerByContact(long contact) {
-		logger.info("Fetching Customer Records by Contact");
+	public List<Customer> fetchCustomerByContact(@RequestParam int dId, @RequestParam long contact) {
+		logger.info("Fetching Customer Records by Dealer ID: " + dId);
 		if (validatorService.contactValidator(contact))
 			return dealerService.fetchCustomerRecordsByContact(contact);
 		else
 			return new LinkedList<>();
 	}
-	
+
 	/**
-	 * This method is used by a logged in dealer to fetch all his/her incentive records.
-	 * @param dId Only parameter for the method, accepts the dealer ID to fetch the incentive records.
+	 * This method is used by a logged in dealer to fetch all his/her incentive
+	 * records.
+	 * 
+	 * @param dId Only parameter for the method, accepts the dealer ID to fetch the
+	 *            incentive records.
 	 * @return
 	 */
-		@GetMapping("/dealer/logged/fetchIncentiveRecords")
-		public List<Incentive> fetchIncentiveRecordsind (int dId) {
-			logger.info("Fetching Incentive Records by ID");
-			if (validatorService.dealerIdValidator(dId))
-				return dealerService.fetchIncentiveRecordsById(dId);
-			else
-				return new LinkedList<>();
-		}
+	@GetMapping("/dealer/logged/fetchIncentiveRecords")
+	public List<Incentive> fetchIncentiveRecordsind(@RequestParam int dId) {
+		logger.info("Fetching Incentive Records by Dealer ID: " + dId);
+		if (validatorService.dealerIdValidator(dId))
+			return dealerService.fetchIncentiveRecordsById(dId);
+		else
+			return new LinkedList<>();
+	}
 }

@@ -13,7 +13,7 @@ import com.groupthree.incentivesystem.entities.Deals;
 import com.groupthree.incentivesystem.repositories.DealsRepository;
 
 /**
- * 
+ * This is a Service class for the Customer usecases.
  * @author Tejas
  *
  */
