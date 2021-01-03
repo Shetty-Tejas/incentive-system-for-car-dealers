@@ -5,9 +5,11 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.groupthree.incentivesystem.exceptions.FetchEmptyException;
 import com.groupthree.incentivesystem.services.CustomerService;
 
 /**
@@ -30,8 +32,10 @@ public class CustomerController {
 	 */
 	
 	@GetMapping("/customer/fetchAllCars")
-	public Map<String, Long> fetchAllCars(){
+	public ResponseEntity<?> fetchAllCars(){
 		logger.info("Displaying all Approved Deals");
-		return customerService.fetchApprovedDeals();
+		Map<String, Long> approvedDeals = customerService.fetchApprovedDeals();
+		if(approvedDeals.isEmpty()) throw new FetchEmptyException("As of now all deals are closed. Sorry :(");
+		else return ResponseEntity.accepted().body(approvedDeals);
 	}
 }

@@ -1,11 +1,11 @@
 package com.groupthree.incentivesystem;
 
-import java.util.LinkedList;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -13,14 +13,16 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.groupthree.incentivesystem.entities.Car;
 import com.groupthree.incentivesystem.entities.Deals;
-import com.groupthree.incentivesystem.entities.Manufacturer;
+import com.groupthree.incentivesystem.exceptions.FetchEmptyException;
+import com.groupthree.incentivesystem.exceptions.LoginException;
+import com.groupthree.incentivesystem.exceptions.ValidationException;
 import com.groupthree.incentivesystem.services.ManufacturerService;
 import com.groupthree.incentivesystem.services.ValidatorService;
 
 /**
  * This is a Rest Controller for the Manufacturer usecases.
  * 
- * @author Tejas
+ * @author Snehal
  *
  */
 @RestController
@@ -39,18 +41,28 @@ public class ManufacturerController {
 	 * @param mId   First parameter for the method, accepts the Manufacturer ID.
 	 * @param mPass Second parameter for the method, accepts the Manufacturer
 	 *              Password.
-	 * @return
+	 * @return Status whether the login is successful or throws an exception.
 	 */
 	@PostMapping("/manufacturer/login")
-	public String manufacturerLogin(@RequestParam int mId, @RequestParam String mPass) {
+	public ResponseEntity<?> manufacturerLogin(@RequestParam int mId, @RequestParam String mPass) {
 		logger.info("Manufacturer Login requested by the Manufacturer ID: " + mId);
-		if (validatorService.manufacturerIdValidation(mId) && validatorService.passValidator(mPass)) {
-			if (manufacturerService.manufacturerLogin(mId, mPass))
-				return "Logged in!";
-			else
-				return "Wrong credentials.";
-		} else
-			return "Validation failed!";
+		if (validatorService.manufacturerIdValidation(mId)) {
+			if (validatorService.passValidator(mPass)) {
+				if (manufacturerService.manufacturerLogin(mId, mPass)) {
+					logger.error("SUCCESS : Logged in!");
+					return ResponseEntity.accepted().body("SUCCESS : Logged in!");
+				} else {
+					logger.error("ERROR : Wrong credentials for the ID: " + mId);
+					throw new LoginException("ERROR : Wrong credentials for the ID: " + mId);
+				}
+			} else {
+				logger.error("ERROR : The password contains illegal characters.");
+				throw new ValidationException("ERROR : The password contains illegal characters.");
+			}
+		} else {
+			logger.error("ERROR : Manufacturer ID doesn't exist.");
+			throw new ValidationException("ERROR : Manufacturer ID doesn't exist.");
+		}
 	}
 
 	/**
@@ -63,17 +75,35 @@ public class ManufacturerController {
 	 * @param mPass  Third parameter for the method, accepts the Dealer Password
 	 *               (Alpha-numeric password with special characters like '$_.@'
 	 *               allowed.
-	 * @return
+	 * @return Registered Manufacturer object else throws an exception.
 	 */
 	@PostMapping("/manufacturer/register")
-	public Manufacturer manufacturerRegister(@RequestParam String mName, @RequestParam String mEmail,
+	public ResponseEntity<?> manufacturerRegister(@RequestParam String mName, @RequestParam String mEmail,
 			@RequestParam String mPass) {
 		logger.info("Manufacturer Registration registered by Manufacturer Name: " + mName);
-		if (validatorService.nameValidator(mName) && validatorService.manufacturerEmailValidator(mEmail)
-				&& validatorService.passValidator(mPass) && validatorService.manufacturerExistsValidation(mName)) {
-			return manufacturerService.manufacturerRegister(mName, mEmail, mPass);
-		} else
-			return new Manufacturer(null, null, null);
+		if (validatorService.nameValidator(mName)) {
+			if (validatorService.manufacturerEmailValidator(mEmail)) {
+				if (validatorService.passValidator(mPass)) {
+					if (validatorService.manufacturerExistsValidation(mName)) {
+						logger.info("SUCCESS : Registering Manufacturer.");
+						return ResponseEntity.accepted()
+								.body(manufacturerService.manufacturerRegister(mName, mEmail, mPass));
+					} else {
+						logger.error("ERROR : Manufacturer for this name already exists.");
+						throw new ValidationException("ERROR : Manufacturer for this name already exists.");
+					}
+				} else {
+					logger.error("ERROR : Password is in an invalid format.");
+					throw new ValidationException("ERROR : Password is in an invalid format.");
+				}
+			} else {
+				logger.error("ERROR : Email is in an invalid format.");
+				throw new ValidationException("ERROR : Email is in an invalid format.");
+			}
+		} else {
+			logger.error("ERROR : Name is in an invalid format.");
+			throw new ValidationException("ERROR : Name is in an invalid format.");
+		}
 	}
 
 	/**
@@ -89,18 +119,34 @@ public class ManufacturerController {
 	 *                     for the corresponding car model.
 	 * @param carMsp       Fourth parameter for the method, accepts the maximum
 	 *                     selling price for the corresponding car model
-	 * @return
+	 * @return Registered Car object else throws an exception.
 	 */
 	@PostMapping("/manufacturer/logged/insertCar")
-	public Car insertCar(@RequestParam int mId, @RequestParam String carModel, @RequestParam long carBasePrice,
-			@RequestParam long carMsp) {
+	public ResponseEntity<?> insertCar(@RequestParam int mId, @RequestParam String carModel,
+			@RequestParam long carBasePrice, @RequestParam long carMsp) {
 		logger.info("Car insertion requested by Manufacturer ID: " + mId);
-		if (validatorService.manufacturerIdValidation(mId) && !validatorService.carExistsValidator(carModel)
-				&& validatorService.carModelValidation(carModel)
-				&& validatorService.carPriceValidation(carBasePrice, carMsp)) {
-			return manufacturerService.insertCar(mId, carModel, carBasePrice, carMsp);
-		} else
-			return new Car(null, null, 0l, 0l);
+		if (validatorService.manufacturerIdValidation(mId)) {
+			if (validatorService.carModelValidation(carModel)) {
+				if (!validatorService.carExistsValidator(carModel)) {
+					if (validatorService.carPriceValidation(carBasePrice, carMsp)) {
+						return ResponseEntity.accepted()
+								.body(manufacturerService.insertCar(mId, carModel, carBasePrice, carMsp));
+					} else {
+						logger.error("ERROR : Car price invalid.");
+						throw new ValidationException("ERROR : Car price invalid.");
+					}
+				} else {
+					logger.error("ERROR : Car already exists.");
+					throw new ValidationException("ERROR : Car already exists.");
+				}
+			} else {
+				logger.error("ERROR : Car model is in an invalid format.");
+				throw new ValidationException("ERROR : Car model is in an invalid format.");
+			}
+		} else {
+			logger.error("ERROR : Manufacturer ID doesn't exist.");
+			throw new ValidationException("ERROR : Manufacturer ID doesn't exist.");
+		}
 	}
 
 	/**
@@ -113,15 +159,24 @@ public class ManufacturerController {
 	 *                 be present in the deals repository.
 	 * @param flag     Third parameter for the method, accepts either "true" or
 	 *                 "false".
-	 * @return
+	 * @return Altered Deals object else throws an exception.
 	 */
 	@PostMapping("/manufacturer/logged/alterStatus")
-	public Deals alterStatus(@RequestParam int mId, @RequestParam String carModel, @RequestParam boolean flag) {
+	public ResponseEntity<?> alterStatus(@RequestParam int mId, @RequestParam String carModel,
+			@RequestParam boolean flag) {
 		logger.info("Status alteration requested by the Manufacturer ID: " + mId);
-		if (validatorService.dealExistsValidator(carModel)) {
-			return manufacturerService.updateDealStatus(carModel, flag);
-		} else
-			return new Deals(null, null, 0l, 0l, null);
+		if (validatorService.manufacturerIdValidation(mId)) {
+			if (validatorService.dealExistsValidator(carModel)) {
+				logger.info("SUCCESS : Altering status.");
+				return ResponseEntity.accepted().body(manufacturerService.updateDealStatus(carModel, flag));
+			} else {
+				logger.error("ERROR : Deal doesn't exists.");
+				throw new ValidationException("ERROR : Deal doesn't exists.");
+			}
+		} else {
+			logger.error("ERROR : Manufacturer ID doesn't exist.");
+			throw new ValidationException("ERROR : Manufacturer ID doesn't exist.");
+		}
 	}
 
 	/**
@@ -129,15 +184,24 @@ public class ManufacturerController {
 	 * the deals repository for the corresponding manufacturer.
 	 * 
 	 * @param mId Only parameter for the method, accepts the manufacturer ID.
-	 * @return
+	 * @return List of all deals for a manufacturer, else throws an exception.
 	 */
 	@GetMapping("/manufacturer/logged/fetchAllDeals")
-	public List<Deals> fetchAllDeals(@RequestParam int mId) {
+	public ResponseEntity<?> fetchAllDeals(@RequestParam int mId) {
 		logger.info("Deal fetch requested by Manufacturer ID: " + mId);
 		if (validatorService.manufacturerIdValidation(mId)) {
-			return manufacturerService.fetchAllDeals(mId);
-		} else
-			return new LinkedList<>();
+			List<Deals> allDeals = manufacturerService.fetchAllDeals(mId);
+			if (allDeals.isEmpty()) {
+				logger.error("ERROR : No deals exist.");
+				throw new FetchEmptyException("ERROR : No deals exist.");
+			} else {
+				logger.info("SUCCESS : Fetching all deals.");
+				return ResponseEntity.accepted().body(allDeals);
+			}
+		} else {
+			logger.error("ERROR : Manufacturer ID doesn't exist.");
+			throw new ValidationException("ERROR : Manufacturer ID doesn't exist.");
+		}
 	}
 
 	/**
@@ -145,15 +209,25 @@ public class ManufacturerController {
 	 * the cars repository for the corresponding manufacturer.
 	 * 
 	 * @param mId Only parameter for the method, accepts the manufacturer ID.
-	 * @return
+	 * @return List of all cars for the manufacturer, else throws an exception.
 	 */
 	@GetMapping("/manufacturer/logged/fetchAllCars")
-	public List<Car> fetchAllCars(@RequestParam int mId) {
+	public ResponseEntity<?> fetchAllCars(@RequestParam int mId) {
 		logger.info("Car fetch requested by Manufacturer ID: " + mId);
 		if (validatorService.manufacturerIdValidation(mId)) {
-			return manufacturerService.fetchAllCars(mId);
-		} else
-			return new LinkedList<>();
+			List<Car> allCars = manufacturerService.fetchAllCars(mId);
+			if (allCars.isEmpty()) {
+				logger.error("ERROR : No cars found.");
+				throw new FetchEmptyException("ERROR : No cars found.");
+			}
+			else {
+				logger.info("SUCCESS : Fetching all cars.");
+				return ResponseEntity.accepted().body(allCars);
+			}
+		} else {
+			logger.error("ERROR : Manufacturer ID doesn't exist.");
+			throw new ValidationException("ERROR : Manufacturer ID doesn't exist.");
+		}
 	}
 
 }

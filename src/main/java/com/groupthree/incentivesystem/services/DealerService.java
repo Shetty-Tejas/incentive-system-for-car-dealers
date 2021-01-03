@@ -127,7 +127,7 @@ public class DealerService {
 	public Dealer dealerRegistration(String dName, long dContact, String dPass) {
 		logger.info(validationSuccess + "... Registering!");
 		dealerObj = new Dealer(dName, dContact, dPass);
-		return dealerRepo.save(dealerObj);
+		return dealerRepo.saveAndFlush(dealerObj);
 	}
 
 	/**
@@ -143,7 +143,7 @@ public class DealerService {
 		carObj = carRepo.findById(dealModel).get();
 		dealsObj = new Deals(carObj.getCarManufacturer(), dealModel, carObj.getCarBasePrice(), carObj.getCarMsp(),
 				incentiveRange);
-		return dealsRepo.save(dealsObj);
+		return dealsRepo.saveAndFlush(dealsObj);
 	}
 
 	/**
@@ -160,7 +160,7 @@ public class DealerService {
 		dealsObj = dealsRepo.findById(dealModel).get();
 		dealsObj.setIncentiveRange(incentiveRange);
 		dealsObj.setStatus("nil");
-		return dealsRepo.save(dealsObj);
+		return dealsRepo.saveAndFlush(dealsObj);
 	}
 
 	/**
@@ -207,14 +207,14 @@ public class DealerService {
 		long incentiveGot = (long) (cost * incPercent / 100);
 
 		dealerObj.setDealerIncentive(existingIncentive + incentiveGot);
-		dealerRepo.save(dealerObj);
+		dealerRepo.saveAndFlush(dealerObj);
 		result += "Dealer Information: " + dealerObj.toString() + "\n";
 		incentiveObj = new Incentive(contactNo, custName, Date.valueOf(date), model, dId, dealerName, cost, incPercent,
 				incentiveGot);
-		incentiveRepo.save(incentiveObj);
+		incentiveRepo.saveAndFlush(incentiveObj);
 		result += "Incentive Information: " + incentiveObj.toString() + "\n";
 		customerObj = new Customer(contactNo, custName, Date.valueOf(date), manufacturer, model, dId, cost);
-		customerRepo.save(customerObj);
+		customerRepo.saveAndFlush(customerObj);
 		result += "Customer Information: " + customerObj.toString() + "\n";
 		return result;
 	}

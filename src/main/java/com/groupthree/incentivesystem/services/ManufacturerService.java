@@ -57,7 +57,7 @@ public class ManufacturerService {
 	public Manufacturer manufacturerRegister(String mName, String mEmail, String mPass) {
 		logger.info(validationSuccess + "... Registering!");
 		mObj = new Manufacturer(mName, mEmail, mPass);
-		return manRepo.save(mObj);
+		return manRepo.saveAndFlush(mObj);
 	}
 
 	/**
@@ -72,7 +72,7 @@ public class ManufacturerService {
 		logger.info(validationSuccess + "... Inserting car!");
 		String manufacturer = fetchManufacturerName(mId);
 		cObj = new Car(manufacturer, carModel, carBasePrice, carMsp);
-		return carRepo.save(cObj);
+		return carRepo.saveAndFlush(cObj);
 	}
 
 	/**
@@ -86,7 +86,7 @@ public class ManufacturerService {
 		dObj = dealsRepo.findById(carModel).get();
 		String status = (flag) ? "Approved" : "Rejected";
 		dObj.setStatus(status);
-		return dealsRepo.save(dObj);
+		return dealsRepo.saveAndFlush(dObj);
 	}
 
 	/**

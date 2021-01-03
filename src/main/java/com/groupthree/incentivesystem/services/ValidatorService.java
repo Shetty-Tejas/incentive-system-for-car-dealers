@@ -18,7 +18,7 @@ import com.groupthree.incentivesystem.repositories.ManufacturerRepository;
 /**
  * This is a Service class for Validations throughout the application.
  * 
- * @author Tejas
+ * @author Tejas/Snehal
  *
  */
 @Service

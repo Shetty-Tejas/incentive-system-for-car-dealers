@@ -1,21 +1,29 @@
 package com.groupthree.incentivesystem.exceptions;
 
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.context.request.WebRequest;
-import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+@RestControllerAdvice
 public class IncentiveSystemExceptionHandler {
 
-	@ControllerAdvice
-	public class IncentiveystemExceptionHandler extends ResponseEntityExceptionHandler{
-		
-		@ExceptionHandler(value = {Exception.class})
-		public ResponseEntity<Object> handleAnyException(Exception ex, WebRequest request){
-			return new ResponseEntity<Object>(ex, new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+	@ResponseBody
+	@ExceptionHandler(value = ValidationException.class)
+	public ResponseEntity<?> handleException(ValidationException exception){
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getMsg());
+	}
+	
+	@ResponseBody
+	@ExceptionHandler(value = LoginException.class)
+	public ResponseEntity<?> handleException(LoginException exception){
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getMsg());
+	}
+	
+	@ResponseBody
+	@ExceptionHandler(value = FetchEmptyException.class)
+	public ResponseEntity<?> handleException(FetchEmptyException exception){
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getMsg());
 	}
 }
