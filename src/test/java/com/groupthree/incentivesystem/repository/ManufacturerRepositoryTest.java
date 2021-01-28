@@ -36,7 +36,7 @@ public class ManufacturerRepositoryTest {
 	public void testExistsByManufacturerName() {
 		Manufacturer manufacturer = getManufacturer();
 		Manufacturer manufacturerInDb = manufacturerRepo.save(manufacturer);
-		Manufacturer manufacturerFromDb = manufacturerRepo.getOne(manufacturerInDb.getManufacturerId());
+		Manufacturer manufacturerFromDb = manufacturerRepo.getOne(getManufacturer().getManufacturerId());
 		assertThat(manufacturerFromDb).isEqualTo(manufacturerInDb);
 	} 
 	

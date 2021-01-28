@@ -22,12 +22,16 @@ import com.groupthree.incentivesystem.repositories.DealerRepository;
 import com.groupthree.incentivesystem.repositories.DealsRepository;
 import com.groupthree.incentivesystem.repositories.HolidayRepository;
 import com.groupthree.incentivesystem.repositories.IncentiveRepository;
-
+/**
+ * 
+ * @author Tejas
+ *
+ */
 @Service
 public class DealerService {
 
-	private static final Logger logger = LoggerFactory.getLogger("CustomerService.class");
-	private String validationSuccess = "Validation Successful";
+	private static final Logger DS_LOGGER = LoggerFactory.getLogger("CustomerService.class");
+	private final String validationSuccess = "Validation Successful";
 
 	private Dealer dealerObj;
 	private Car carObj;
@@ -55,8 +59,8 @@ public class DealerService {
 	 * @param date Only parameter for the method, accepts the string date.
 	 * @return LocalDate type of 'date'.
 	 */
-	public LocalDate dateConverter(String date) {
-		logger.info("Converting type string to date");
+	public LocalDate dateConverter(final String date) {
+		DS_LOGGER.info("Converting type string to date");
 		try {
 			DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 			return LocalDate.parse(date, format);
@@ -80,22 +84,23 @@ public class DealerService {
 	 *               incentive range.
 	 * @return The final incentive bonus.
 	 */
-	public double incentiveFind(LocalDate date, int incMin, int incMax) {
-		logger.info("Holiday and Incentive range finder.");
+	public double incentiveFind(final LocalDate date, final int incMin, final int incMax) {
+		DS_LOGGER.info("Holiday and Incentive range finder.");
 		int count = -3;
 		int max = 0;
-		List<Holidays> holidays = holidayRepo.findAll();
+		final List<Holidays> holidays = holidayRepo.findAll();
 		for (int i = 0; i < 7; i++) {
 			LocalDate checker = date.plusDays(count++);
 			if (holidays.stream().anyMatch(h -> h.getHolidayDate().equals(checker.toString()))) {
-				int p = date.until(checker).getDays();
-				max = 4 - Math.abs(p);
+				int days = date.until(checker).getDays();
+				max = 4 - Math.abs(days);
 				break;
-			} else
+			} else{
 				continue;
+			}
 		}
-		int variableInc = incMax - incMin;
-		double inc = ((double) (variableInc * max) / 4);
+		final int variableInc = incMax - incMin;
+		final double inc = (double) (variableInc * max) / 4;
 		return (double) incMin + inc;
 	}
 
@@ -106,13 +111,12 @@ public class DealerService {
 	 * @param dPass Second parameter for the method, accepts the dealer password.
 	 * @return True if successful log in, else False.
 	 */
-	public boolean dealerLogin(int dId, String dPass) {
-		logger.info(validationSuccess + "... Logging in!");
+	public boolean dealerLogin(final int dId, final String dPass) {
+		if(DS_LOGGER.isInfoEnabled()) {
+			DS_LOGGER.info(validationSuccess + "... Logging in!");
+		}
 		dealerObj = dealerRepo.findById(dId).get();
-		if (dealerObj.getDealerPass().equals(dPass))
-			return true;
-		else
-			return false;
+		return dealerObj.getDealerPass().equals(dPass);
 	}
 
 	/**
@@ -124,8 +128,10 @@ public class DealerService {
 	 * @param dPass    Third parameter for the method, accepts the dealer password.
 	 * @return Newly created Dealer
 	 */
-	public Dealer dealerRegistration(String dName, long dContact, String dPass) {
-		logger.info(validationSuccess + "... Registering!");
+	public Dealer dealerRegistration(final String dName, final long dContact, final String dPass) {
+		if(DS_LOGGER.isInfoEnabled()) {
+			DS_LOGGER.info(validationSuccess + "... Registering!");
+		}
 		dealerObj = new Dealer(dName, dContact, dPass);
 		return dealerRepo.saveAndFlush(dealerObj);
 	}
@@ -138,8 +144,10 @@ public class DealerService {
 	 *                       range string.
 	 * @return Newly created Deal
 	 */
-	public Deals createDeals(String dealModel, String incentiveRange) {
-		logger.info(validationSuccess + "... Creating deal!");
+	public Deals createDeals(final String dealModel, final String incentiveRange) {
+		if(DS_LOGGER.isInfoEnabled()) {
+			DS_LOGGER.info(validationSuccess + "... Creating deal!");
+		}
 		carObj = carRepo.findById(dealModel).get();
 		dealsObj = new Deals(carObj.getCarManufacturer(), dealModel, carObj.getCarBasePrice(), carObj.getCarMsp(),
 				incentiveRange);
@@ -154,8 +162,10 @@ public class DealerService {
 	 *                       range string.
 	 * @return Redefined Deal
 	 */
-	public Deals redefineDeals(String dealModel, String incentiveRange) {
-		logger.info(validationSuccess + "... Redefining pre-existing deal!");
+	public Deals redefineDeals(final String dealModel, final String incentiveRange) {
+		if(DS_LOGGER.isInfoEnabled()) {
+			DS_LOGGER.info(validationSuccess + "... Redefining pre-existing deal!");
+		}
 		carObj = carRepo.findById(dealModel).get();
 		dealsObj = dealsRepo.findById(dealModel).get();
 		dealsObj.setIncentiveRange(incentiveRange);
@@ -169,10 +179,12 @@ public class DealerService {
 	 * @param dealModel Only parameter for the method, accepts the car model.
 	 * @return Deleted deal.
 	 */
-	public String deleteDeals(String dealModel) {
-		logger.info(validationSuccess + "... Deleting deal!");
+	public String deleteDeals(final String dealModel) {
+		if(DS_LOGGER.isInfoEnabled()) {
+			DS_LOGGER.info(validationSuccess + "... Deleting deal!");
+		}
 		dealsObj = dealsRepo.findById(dealModel).get();
-		String deal = dealsObj.toString();
+		final String deal = dealsObj.toString();
 		dealsRepo.delete(dealsObj);
 		return "Deleted deal: " + deal;
 	}
@@ -189,22 +201,24 @@ public class DealerService {
 	 * @return Creates incentive and customer records and updates incentive of the
 	 *         dealer.
 	 */
-	public String recordIncentives(int dId, long contactNo, String custName, LocalDate date, String model) {
-		logger.info(validationSuccess + "... Recording details!");
+	public String recordIncentives(final int dId, final long contactNo, final String custName, final  LocalDate date, final String model) {
+		if(DS_LOGGER.isInfoEnabled()) {
+			DS_LOGGER.info(validationSuccess + "... Recording details!");
+		}
 		String result = "";
 		dealsObj = dealsRepo.findById(model).get();
 		dealerObj = dealerRepo.findById(dId).get();
 
-		String manufacturer = dealsObj.getDealManufacturer();
-		String incentiveRange = dealsObj.getIncentiveRange();
-		String dealerName = dealerObj.getDealerName();
-		long cost = dealsObj.getCarMsp();
-		long existingIncentive = dealerObj.getDealerIncentive();
+		final String manufacturer = dealsObj.getDealManufacturer();
+		final String incentiveRange = dealsObj.getIncentiveRange();
+		final String dealerName = dealerObj.getDealerName();
+		final long cost = dealsObj.getCarMsp();
+		final long existingIncentive = dealerObj.getDealerIncentive();
 
-		int minInc = Integer.parseInt(incentiveRange.substring(0, incentiveRange.indexOf('-')));
-		int maxInc = Integer.parseInt(incentiveRange.substring(incentiveRange.indexOf('-') + 1));
-		double incPercent = this.incentiveFind(date, minInc, maxInc);
-		long incentiveGot = (long) (cost * incPercent / 100);
+		final int minInc = Integer.parseInt(incentiveRange.substring(0, incentiveRange.indexOf('-')));
+		final int maxInc = Integer.parseInt(incentiveRange.substring(incentiveRange.indexOf('-') + 1));
+		final double incPercent = this.incentiveFind(date, minInc, maxInc);
+		final long incentiveGot = (long) (cost * incPercent / 100);
 
 		dealerObj.setDealerIncentive(existingIncentive + incentiveGot);
 		dealerRepo.saveAndFlush(dealerObj);
@@ -225,7 +239,7 @@ public class DealerService {
 	 * @return List of all deals
 	 */
 	public List<Deals> fetchAllDeals() {
-		logger.info("List of All Deals");
+		DS_LOGGER.info("List of All Deals");
 		return dealsRepo.findAll();
 	}
 
@@ -235,8 +249,8 @@ public class DealerService {
 	 * @param dId Only parameter for the record, accepts the dealer ID.
 	 * @return List of incentive records for corresponding dealer.
 	 */
-	public List<Incentive> fetchIncentiveRecordsById(int dId) {
-		logger.info("Fetching Incentive Records for and ID");
+	public List<Incentive> fetchIncentiveRecordsById(final int dId) {
+		DS_LOGGER.info("Fetching Incentive Records for and ID");
 		return incentiveRepo.findByDealerId(dId);
 	}
 
@@ -246,8 +260,8 @@ public class DealerService {
 	 * @param dId Only parameter for the method, accepts the dealer ID.
 	 * @return List of customer records for corresponding dealer.
 	 */
-	public List<Customer> fetchCustomerRecordsById(int dId) {
-		logger.info("Fetching Customer Records by ID");
+	public List<Customer> fetchCustomerRecordsById(final int dId) {
+		DS_LOGGER.info("Fetching Customer Records by ID");
 		return customerRepo.findByDealerId(dId);
 	}
 
@@ -257,9 +271,28 @@ public class DealerService {
 	 * @param contact Only parameter for the method, accepts the customer contact.
 	 * @return List of customer records for the corresponding contact.
 	 */
-	public List<Customer> fetchCustomerRecordsByContact(long contact) {
-		logger.info("Fetching Customer records by Contact ");
+	public List<Customer> fetchCustomerRecordsByContact(final long contact) {
+		DS_LOGGER.info("Fetching Customer records by Contact ");
 		return customerRepo.findByCustomerContact(contact);
 	}
+	
+	public List<Car> fetchAllCars(){
+		DS_LOGGER.info("Fetching all cars");
+		return carRepo.findAll();
+	}
+	
+	public List<Deals> fetchApprovedDeals(){
+		DS_LOGGER.info("Fetching approved deals");
+		return dealsRepo.findByDealStatus("Approved");
+	}
+	
+	public List<Deals> fetchRejectedDeals(){
+		DS_LOGGER.info("Fetching approved deals");
+		return dealsRepo.findByDealStatus("Rejected");
+	}
 
+	public Dealer fetchDealer(int dId) {
+		DS_LOGGER.info("Fetching dealer");
+		return dealerRepo.findById(dId).get();
+	}
 }

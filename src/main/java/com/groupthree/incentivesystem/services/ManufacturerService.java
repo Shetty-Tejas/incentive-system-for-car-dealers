@@ -17,18 +17,19 @@ import com.groupthree.incentivesystem.repositories.ManufacturerRepository;
 @Service
 public class ManufacturerService {
 	
-	private final Logger logger = LoggerFactory.getLogger(ManufacturerService.class);
-	private String validationSuccess = "Validation Successful";
+	private static final Logger MS_LOGGER = LoggerFactory.getLogger(ManufacturerService.class);
 	
-	Manufacturer mObj;
-	Car cObj;
-	Deals dObj;
+	private final String validationSuccess = "Validation Successful";
+	
+	private Manufacturer mObj;
+	private Car cObj;
+	private Deals dObj;
 	@Autowired
-	ManufacturerRepository manRepo;
+	private ManufacturerRepository manRepo;
 	@Autowired
-	CarRepository carRepo;
+	private CarRepository carRepo;
 	@Autowired
-	DealsRepository dealsRepo;
+	private DealsRepository dealsRepo;
 
 	/**
 	 * This method is used to log in a manufacturer.
@@ -36,15 +37,12 @@ public class ManufacturerService {
 	 * @param password Second parameter for the method, accepts the manufacturer password.
 	 * @return True if successful log in, else False.
 	 */
-	public boolean manufacturerLogin(int mId, String password) {
-		logger.info(validationSuccess + "... Logging in!");
+	public boolean manufacturerLogin(final int mId, final String password) {
+		if(MS_LOGGER.isInfoEnabled()) {
+			MS_LOGGER.info(validationSuccess + "... Logging in!");
+		}
 		mObj = manRepo.findById(mId).get();
-		if (mObj.getManufacturerPass().equals(password)) {
-			return true;
-		}
-		else {
-			return false;
-		}
+		return mObj.getManufacturerPass().equals(password);
 	}
 
 	/**
@@ -54,8 +52,10 @@ public class ManufacturerService {
 	 * @param mPass Third parameter for the method, accepts the manufacturer password.
 	 * @return Newly created manufacturer object.
 	 */
-	public Manufacturer manufacturerRegister(String mName, String mEmail, String mPass) {
-		logger.info(validationSuccess + "... Registering!");
+	public Manufacturer manufacturerRegister(final String mName, final String mEmail, final String mPass) {
+		if(MS_LOGGER.isInfoEnabled()) {
+			MS_LOGGER.info(validationSuccess + "... Registering!");
+		}
 		mObj = new Manufacturer(mName, mEmail, mPass);
 		return manRepo.saveAndFlush(mObj);
 	}
@@ -68,9 +68,11 @@ public class ManufacturerService {
 	 * @param carMsp Fourth parameter for the method, accepts the car msp.
 	 * @return Newly created car object.
 	 */
-	public Car insertCar(int mId, String carModel, long carBasePrice, long carMsp) {
-		logger.info(validationSuccess + "... Inserting car!");
-		String manufacturer = fetchManufacturerName(mId);
+	public Car insertCar(final int mId, final String carModel, final long carBasePrice, final long carMsp) {
+		if(MS_LOGGER.isInfoEnabled()) {
+			MS_LOGGER.info(validationSuccess + "... Inserting car!");
+		}
+		final String manufacturer = fetchManufacturerName(mId);
 		cObj = new Car(manufacturer, carModel, carBasePrice, carMsp);
 		return carRepo.saveAndFlush(cObj);
 	}
@@ -81,10 +83,12 @@ public class ManufacturerService {
 	 * @param flag Second parameter for the method, accepts either True or False.
 	 * @return Updated Deal object
 	 */
-	public Deals updateDealStatus(String carModel, boolean flag) {
-		logger.info(validationSuccess + "... Updating status!");
+	public Deals updateDealStatus(final String carModel, final boolean flag) {
+		if(MS_LOGGER.isInfoEnabled()) {
+			MS_LOGGER.info(validationSuccess + "... Updating status!");
+		}
 		dObj = dealsRepo.findById(carModel).get();
-		String status = (flag) ? "Approved" : "Rejected";
+		final String status = flag ? "Approved" : "Rejected";
 		dObj.setStatus(status);
 		return dealsRepo.saveAndFlush(dObj);
 	}
@@ -94,9 +98,11 @@ public class ManufacturerService {
 	 * @param mId Only parameter for the method, accepts the manufacturer ID.
 	 * @return List of deals corresponding to the manufacturer.
 	 */
-	public List<Deals> fetchAllDeals(int mId) {
-		String manufacturer = fetchManufacturerName(mId);
-		logger.info(validationSuccess + "... Finding all deals for " + manufacturer);
+	public List<Deals> fetchAllDeals(final int mId) {
+		final String manufacturer = fetchManufacturerName(mId);
+		if(MS_LOGGER.isInfoEnabled()) {
+			MS_LOGGER.info(validationSuccess + "... Finding all deals for " + manufacturer);
+		}
 		return dealsRepo.findByDealManufacturer(manufacturer);
 	}
 
@@ -105,7 +111,7 @@ public class ManufacturerService {
 	 * @param mId Only parameter for the method, accepts the manufacturer ID.
 	 * @return Name of the manufacturer
 	 */
-	public String fetchManufacturerName(int mId) {
+	public String fetchManufacturerName(final int mId) {
 		return manRepo.findById(mId).get().getManufacturerName();
 	}
 	
@@ -114,9 +120,18 @@ public class ManufacturerService {
 	 * @param mId Only parameter for the method, accepts the manufacturer ID.
 	 * @return List of cars corresponding to the manufacturer.
 	 */
-	public List<Car> fetchAllCars(int mId){
-		String manufacturer = fetchManufacturerName(mId);
-		logger.info(validationSuccess + "... Finding all cars for " + manufacturer);
+	public List<Car> fetchAllCars(final int mId){
+		final String manufacturer = fetchManufacturerName(mId);
+		if(MS_LOGGER.isInfoEnabled()) {
+			MS_LOGGER.info(validationSuccess + "... Finding all cars for " + manufacturer);
+		}
 		return carRepo.findByCarManufacturer(manufacturer);
+	}
+	
+	public Manufacturer getProfile(final int mId) {
+		if(MS_LOGGER.isInfoEnabled()) {
+			MS_LOGGER.info(validationSuccess + "... Finding profile: " + mId);
+		}
+		return manRepo.findById(mId).get();
 	}
 }

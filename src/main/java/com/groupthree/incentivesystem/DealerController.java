@@ -7,14 +7,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.ResponseEntity.BodyBuilder;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.groupthree.incentivesystem.entities.Car;
 import com.groupthree.incentivesystem.entities.Customer;
+import com.groupthree.incentivesystem.entities.Dealer;
 import com.groupthree.incentivesystem.entities.Deals;
 import com.groupthree.incentivesystem.entities.Incentive;
+import com.groupthree.incentivesystem.exceptions.ErrorMessagesConstants;
 import com.groupthree.incentivesystem.exceptions.FetchEmptyException;
 import com.groupthree.incentivesystem.exceptions.LoginException;
 import com.groupthree.incentivesystem.exceptions.ValidationException;
@@ -28,41 +33,54 @@ import com.groupthree.incentivesystem.services.ValidatorService;
  *
  */
 @RestController
+@CrossOrigin(origins = "http://localhost:3000")
 public class DealerController {
 
-	private static final Logger logger = LoggerFactory.getLogger("DealerController.class");
+	/**
+	 * Class level logger
+	 */
+	private static final Logger D_LOGGER = LoggerFactory.getLogger("DealerController.class");
+	/**
+	 * BodyBuilder object
+	 */
+	private final BodyBuilder response = ResponseEntity.accepted();
 
+	/**
+	 * Dealer Service class declaration
+	 */
 	@Autowired
-	DealerService dealerService;
+	private DealerService dealerService;
+	/**
+	 * Validator Service class declaration
+	 */
 	@Autowired
-	ValidatorService validatorService;
+	private ValidatorService validatorService;
 
 	/**
 	 * This method is used to log in the dealer.
 	 * 
 	 * @param dId   First parameter for the method, accepts the Dealer ID.
 	 * @param dPass Second parameter for the method, accepts the Dealer Password.
-	 * @return Status whether the login is successful or throws an exception.
+	 * @return ID if the login is successful or else returns wrong credentials string.
 	 */
 	@PostMapping("/dealer/login")
-	public ResponseEntity<?> dealerLogin(@RequestParam int dId, @RequestParam String dPass) {
-		logger.info("Dealer Login requested by Dealer ID: " + dId);
+	public ResponseEntity<?> dealerLogin(@RequestParam final int dId, @RequestParam final String dPass) {
+		if(D_LOGGER.isInfoEnabled()) {
+			D_LOGGER.info("Dealer Login requested by Dealer ID: " + dId);
+		}
 		if (validatorService.dealerIdValidator(dId)) {
 			if (validatorService.passValidator(dPass)) {
 				if (dealerService.dealerLogin(dId, dPass)) {
-					logger.info("SUCCESS : Dealer Login Successful!");
-					return ResponseEntity.accepted().body("SUCCESS : Dealer Login Successful!");
+					D_LOGGER.info("SUCCESS : Dealer Login Successful!");
+					return response.body(dId);
 				} else {
-					logger.error("ERROR : Wrong credentials entered for ID: " + dId);
-					throw new LoginException("ERROR : Wrong credentials entered for ID: " + dId);
+					throw new LoginException(ErrorMessagesConstants.WRONG_CRED + dId);
 				}
 			} else {
-				logger.error("ERROR : Password includes illegal characters.");
-				throw new ValidationException("ERROR : Password includes illegal characters.");
+				throw new ValidationException(ErrorMessagesConstants.PASS_ERR);
 			}
 		} else {
-			logger.error("ERROR : ID doesn't exist.");
-			throw new ValidationException("ERROR : ID doesn't exist.");
+			throw new ValidationException(ErrorMessagesConstants.ID_ERR);
 		}
 	}
 
@@ -78,30 +96,28 @@ public class DealerController {
 	 * @return Registered Dealer object else throws an exception.
 	 */
 	@PostMapping("/dealer/register")
-	public ResponseEntity<?> dealerRegistration(@RequestParam String dName, @RequestParam long dContact,
-			@RequestParam String dPass) {
-		logger.info("Dealer Registration requested by Dealer Name: " + dName);
+	public ResponseEntity<?> dealerRegistration(@RequestParam final String dName, @RequestParam final long dContact,
+			@RequestParam final String dPass) {
+		if(D_LOGGER.isInfoEnabled()) {
+			D_LOGGER.info("Dealer Registration requested by Dealer Name: " + dName);
+		}
 		if (validatorService.nameValidator(dName)) {
 			if (validatorService.contactValidator(dContact)) {
 				if (validatorService.passValidator(dPass)) {
 					if (validatorService.checkIfContactExists(dContact)) {
-						logger.info("SUCCESS : Dealer Registration Successful!");
-						return ResponseEntity.accepted().body(dealerService.dealerRegistration(dName, dContact, dPass));
+						D_LOGGER.info("SUCCESS : Dealer Registration Successful!");
+						return response.body(dealerService.dealerRegistration(dName, dContact, dPass));
 					} else {
-						logger.error("ERROR : Contact number already exists.");
-						throw new ValidationException("ERROR : Contact number already exists.");
+						throw new ValidationException(ErrorMessagesConstants.CONTACT_EXIST);
 					}
 				} else {
-					logger.error("ERROR : Password includes illegal characters.");
-					throw new ValidationException("ERROR : Password includes illegal characters.");
+					throw new ValidationException(ErrorMessagesConstants.PASS_ERR);
 				}
 			} else {
-				logger.error("ERROR : Contact number is invalid.");
-				throw new ValidationException("ERROR : Contact number is invalid.");
+				throw new ValidationException(ErrorMessagesConstants.CONTACT_ERR);
 			}
 		} else {
-			logger.error("ERROR : Name is invalid");
-			throw new ValidationException("ERROR : Name is invalid");
+			throw new ValidationException(ErrorMessagesConstants.NAME_FORMAT);
 		}
 	}
 
@@ -119,31 +135,29 @@ public class DealerController {
 	 * @return Registered Deals object else throws an exception.
 	 */
 	@PostMapping("/dealer/logged/createDeals")
-	public ResponseEntity<?> createDeals(@RequestParam int dId, @RequestParam String dealModel,
-			@RequestParam String incentiveRange) {
-		logger.info("Deal creation requested by Dealer ID: " + dId);
+	public ResponseEntity<?> createDeals(@RequestParam final int dId, @RequestParam final String dealModel,
+			@RequestParam final String incentiveRange) {
+		if(D_LOGGER.isInfoEnabled()) {
+			D_LOGGER.info("Deal creation requested by Dealer ID: " + dId);
+		}
 		if (validatorService.carExistsValidator(dealModel)) {
 			if (validatorService.incentiveRangeValidator(incentiveRange)) {
-				if (!validatorService.dealExistsValidator(dealModel)) {
+				if (validatorService.dealDoesntExistsValidator(dealModel)) {
 					if (validatorService.dealerIdValidator(dId)) {
-						logger.info("SUCCESS : Creating deal");
-						return ResponseEntity.accepted().body(dealerService.createDeals(dealModel, incentiveRange));
+						D_LOGGER.info("SUCCESS : Creating deal");
+						return response.body(dealerService.createDeals(dealModel, incentiveRange));
 					} else {
-						logger.error("ERROR : Dealer ID doesn't exist.");
-						throw new ValidationException("ERROR : Dealer ID doesn't exist.");
+						throw new ValidationException(ErrorMessagesConstants.ID_ERR);
 					}
 				} else {
-					logger.error("ERROR : Deal already exists.");
-					throw new ValidationException("ERROR : Deal already exists.");
+					throw new ValidationException(ErrorMessagesConstants.DEAL_EXIST);
 				}
 			} else {
-				logger.error("ERROR : Incentive range is in an invalid format.");
-				throw new ValidationException("ERROR : Incentive range is in an invalid format.");
+				throw new ValidationException(ErrorMessagesConstants.INCENTIVE_FORMAT);
 			}
 
 		} else {
-			logger.error("ERROR : Car doesn't exists.");
-			throw new ValidationException("ERROR : Car doesn't exists.");
+			throw new ValidationException(ErrorMessagesConstants.CAR_NOT_EXIST);
 		}
 	}
 
@@ -163,31 +177,29 @@ public class DealerController {
 	 * @return Redefined Deals object else throws an exception.
 	 */
 	@PostMapping("/dealer/logged/redefineDeals")
-	public ResponseEntity<?> redefineDeals(@RequestParam int dId, @RequestParam String dealModel,
-			@RequestParam String incentiveRange) {
-		logger.info("Deal redefinition requested by Dealer ID: " + dId);
+	public ResponseEntity<?> redefineDeals(@RequestParam final int dId, @RequestParam final String dealModel,
+			@RequestParam final String incentiveRange) {
+		if(D_LOGGER.isInfoEnabled()) {
+			D_LOGGER.info("Deal redefinition requested by Dealer ID: " + dId);
+		}
 		if (validatorService.carExistsValidator(dealModel)) {
 			if (validatorService.incentiveRangeValidator(incentiveRange)) {
 				if (validatorService.dealExistsValidator(dealModel)) {
 					if (validatorService.dealerIdValidator(dId)) {
-						logger.info("SUCCESS : Redefining deal");
-						return ResponseEntity.accepted().body(dealerService.redefineDeals(dealModel, incentiveRange));
+						D_LOGGER.info("SUCCESS : Redefining deal");
+						return response.body(dealerService.redefineDeals(dealModel, incentiveRange));
 					} else {
-						logger.error("ERROR : Dealer ID doesn't exist.");
-						throw new ValidationException("ERROR : Dealer ID doesn't exist.");
+						throw new ValidationException(ErrorMessagesConstants.ID_ERR);
 					}
 				} else {
-					logger.error("ERROR : Deal doesn't exist.");
-					throw new ValidationException("ERROR : Deal doesn't exist.");
+					throw new ValidationException(ErrorMessagesConstants.DEAL_NOT_EXIST);
 				}
 			} else {
-				logger.error("ERROR : Incentive range is in an invalid format.");
-				throw new ValidationException("ERROR : Incentive range is in an invalid format.");
+				throw new ValidationException(ErrorMessagesConstants.INCENTIVE_FORMAT);
 			}
 
 		} else {
-			logger.error("ERROR : Car doesn't exists.");
-			throw new ValidationException("ERROR : Car doesn't exists.");
+			throw new ValidationException(ErrorMessagesConstants.CAR_NOT_EXIST);
 		}
 	}
 
@@ -201,19 +213,19 @@ public class DealerController {
 	 * @return Information about deleted deal else throws an exception.
 	 */
 	@PostMapping("/dealer/logged/deleteDeals")
-	public ResponseEntity<?> deleteDeals(@RequestParam int dId, @RequestParam String dealModel) {
-		logger.info("Deal deletion requested by Dealer ID: " + dId);
+	public ResponseEntity<?> deleteDeals(@RequestParam final int dId, @RequestParam final String dealModel) {
+		if(D_LOGGER.isInfoEnabled()) {
+			D_LOGGER.info("Deal deletion requested by Dealer ID: " + dId);
+		}
 		if (validatorService.dealExistsValidator(dealModel)) {
 			if (validatorService.dealerIdValidator(dId)) {
-				logger.info("SUCCESS : Deleting deal");
-				return ResponseEntity.accepted().body(dealerService.deleteDeals(dealModel));
+				D_LOGGER.info("SUCCESS : Deleting deal");
+				return response.body(dealerService.deleteDeals(dealModel));
 			} else {
-				logger.error("ERROR : Dealer ID doesn't exist.");
-				throw new ValidationException("ERROR : Dealer ID doesn't exist.");
+				throw new ValidationException(ErrorMessagesConstants.ID_ERR);
 			}
 		} else {
-			logger.error("ERROR : Deal doesn't exist.");
-			throw new ValidationException("ERROR : Deal doesn't exist.");
+			throw new ValidationException(ErrorMessagesConstants.DEAL_NOT_EXIST);
 		}
 	}
 
@@ -226,20 +238,20 @@ public class DealerController {
 	 * @return List of all deals else throws an exception.
 	 */
 	@GetMapping("/dealer/logged/fetchAllDeals")
-	public ResponseEntity<?> fetchAllDeals(@RequestParam int dId) {
-		logger.info("Deal fetch requested by Dealer ID: " + dId);
+	public ResponseEntity<?> fetchAllDeals(@RequestParam final int dId) {
+		if(D_LOGGER.isInfoEnabled()) {
+			D_LOGGER.info("Deal fetch requested by Dealer ID: " + dId);
+		}
 		if (validatorService.dealerIdValidator(dId)) {
-			List<Deals> allDeals = dealerService.fetchAllDeals();
+			final List<Deals> allDeals = dealerService.fetchAllDeals();
 			if (allDeals.isEmpty()) {
-				logger.error("ERROR : No deals are present.");
-				throw new FetchEmptyException("ERROR : No deals are present.");
+				throw new FetchEmptyException(ErrorMessagesConstants.NO_DEAL_AVL);
 			} else {
-				logger.info("SUCCESS : Fetching all deals.");
-				return ResponseEntity.accepted().body(allDeals);
+				D_LOGGER.info("SUCCESS : Fetching all deals.");
+				return response.body(allDeals);
 			}
 		} else {
-			logger.error("ERROR : Dealer ID doesn't exist");
-			throw new ValidationException("ERROR : Dealer ID doesn't exist");
+			throw new ValidationException(ErrorMessagesConstants.ID_ERR);
 		}
 	}
 
@@ -263,38 +275,34 @@ public class DealerController {
 	 * @return Incentive, customer and dealer information, else throws an exception.
 	 */
 	@PostMapping("/dealer/logged/recordIncentive")
-	public ResponseEntity<?> recordIncentive(@RequestParam int dId, @RequestParam long contactNo,
-			@RequestParam String custName, @RequestParam String date, @RequestParam String model) {
-		logger.info("Incentive recording requested by Dealer ID: " + dId);
-		LocalDate bookDate = dealerService.dateConverter(date);
-		if (!bookDate.equals(null) && validatorService.dealDateValidator(bookDate)) {
+	public ResponseEntity<?> recordIncentive(@RequestParam final int dId, @RequestParam final long contactNo,
+			@RequestParam final String custName, @RequestParam final String date, @RequestParam final String model) {
+		if(D_LOGGER.isInfoEnabled()) {
+			D_LOGGER.info("Incentive recording requested by Dealer ID: " + dId);
+		}
+		final LocalDate bookDate = dealerService.dateConverter(date);
+		if (bookDate != null && validatorService.dealDateValidator(bookDate)) {
 			if (validatorService.dealerIdValidator(dId)) {
 				if (validatorService.nameValidator(custName)) {
 					if (validatorService.contactValidator(contactNo)) {
 						if (validatorService.checkIfDealApproved(model)) {
-							logger.info("SUCCESS : Recording incentive.");
-							return ResponseEntity.accepted()
-									.body(dealerService.recordIncentives(dId, contactNo, custName, bookDate, model));
+							D_LOGGER.info("SUCCESS : Recording incentive.");
+							return response.body(dealerService.recordIncentives(dId, contactNo, custName, bookDate, model));
 						} else {
-							logger.error("ERROR : The deal isn't approved yet.");
-							throw new ValidationException("ERROR : The deal isn't approved yet.");
+							throw new ValidationException(ErrorMessagesConstants.APPROVAL_ERR);
 						}
 
 					} else {
-						logger.error("ERROR : Contact number is invalid.");
-						throw new ValidationException("ERROR : Contact number is invalid.");
+						throw new ValidationException(ErrorMessagesConstants.CONTACT_ERR);
 					}
 				} else {
-					logger.error("ERROR : Name is invalid");
-					throw new ValidationException("ERROR : Name is invalid");
+					throw new ValidationException(ErrorMessagesConstants.NAME_FORMAT);
 				}
 			} else {
-				logger.info("ERROR : Dealer ID doesn't exists");
-				throw new ValidationException("ERROR : Dealer ID doesn't exists");
+				throw new ValidationException(ErrorMessagesConstants.ID_ERR);
 			}
 		} else {
-			logger.error("ERROR : Date is not valid.");
-			throw new ValidationException("ERROR : Date is not valid.");
+			throw new ValidationException(ErrorMessagesConstants.DATE_INVALID);
 		}
 
 	}
@@ -308,20 +316,20 @@ public class DealerController {
 	 * @return List of all customers of dealer, else throws an exception.
 	 */
 	@GetMapping("/dealer/logged/fetchCustomerById")
-	public ResponseEntity<?> fetchCustomerById(@RequestParam int dId) {
-		logger.info("Fetching Customer Details by Dealer ID: " + dId);
+	public ResponseEntity<?> fetchCustomerById(@RequestParam final int dId) {
+		if(D_LOGGER.isInfoEnabled()) {
+			D_LOGGER.info("Fetching Customer Details by Dealer ID: " + dId);
+		}
 		if (validatorService.dealerIdValidator(dId)) {
-			List<Customer> customerById = dealerService.fetchCustomerRecordsById(dId);
+			final List<Customer> customerById = dealerService.fetchCustomerRecordsById(dId);
 			if (customerById.isEmpty()) {
-				logger.error("ERROR : No customers are present.");
-				throw new FetchEmptyException("ERROR : No customers are present.");
+				throw new FetchEmptyException(ErrorMessagesConstants.NO_CUST_AVL);
 			} else {
-				logger.info("SUCCESS : Fetching customers.");
-				return ResponseEntity.accepted().body(customerById);
+				D_LOGGER.info("SUCCESS : Fetching customers.");
+				return response.body(customerById);
 			}
 		} else {
-			logger.error("ERROR : Dealer ID doesn't exist.");
-			throw new ValidationException("ERROR : Dealer ID doesn't exist.");
+			throw new ValidationException(ErrorMessagesConstants.ID_ERR);
 		}
 	}
 
@@ -336,25 +344,24 @@ public class DealerController {
 	 * @return List of all customers by contact number else throws an exception.
 	 */
 	@GetMapping("/dealer/logged/fetchCustomerByContact")
-	public ResponseEntity<?> fetchCustomerByContact(@RequestParam int dId, @RequestParam long contact) {
-		logger.info("Fetching Customer Records by Dealer ID: " + dId);
+	public ResponseEntity<?> fetchCustomerByContact(@RequestParam final int dId, @RequestParam final long contact) {
+		if(D_LOGGER.isInfoEnabled()) {
+			D_LOGGER.info("Fetching Customer Records by Dealer ID: " + dId);
+		}
 		if (validatorService.dealerIdValidator(dId)) {
 			if (validatorService.contactValidator(contact)) {
-				List<Customer> customerByContact = dealerService.fetchCustomerRecordsByContact(contact);
+				final List<Customer> customerByContact = dealerService.fetchCustomerRecordsByContact(contact);
 				if (customerByContact.isEmpty()) {
-					logger.error("ERROR : No customers with this contact number are present.");
-					throw new FetchEmptyException("ERROR : No customers with this contact number are present.");
+					throw new FetchEmptyException(ErrorMessagesConstants.NO_CUST_AVL);
 				} else {
-					logger.info("SUCCESS : Fetching customers.");
-					return ResponseEntity.accepted().body(customerByContact);
+					D_LOGGER.info("SUCCESS : Fetching customers.");
+					return response.body(customerByContact);
 				}
 			} else {
-				logger.error("ERROR : Contact number is invalid.");
-				throw new ValidationException("ERROR : Contact number is invalid.");
+				throw new ValidationException(ErrorMessagesConstants.CONTACT_ERR);
 			}
 		} else {
-			logger.error("ERROR : Dealer ID doesn't exist.");
-			throw new ValidationException("ERROR : Dealer ID doesn't exist.");
+			throw new ValidationException(ErrorMessagesConstants.ID_ERR);
 		}
 	}
 
@@ -368,21 +375,97 @@ public class DealerController {
 	 *         exception.
 	 */
 	@GetMapping("/dealer/logged/fetchIncentiveRecords")
-	public ResponseEntity<?> fetchIncentiveRecordsind(@RequestParam int dId) {
-		logger.info("Fetching Incentive Records by Dealer ID: " + dId);
+	public ResponseEntity<?> fetchIncentiveRecordsind(@RequestParam final int dId) {
+		if(D_LOGGER.isInfoEnabled()) {
+			D_LOGGER.info("Fetching Incentive Records by Dealer ID: " + dId);
+		}
 		if (validatorService.dealerIdValidator(dId)) {
-			List<Incentive> incentiveRecords = dealerService.fetchIncentiveRecordsById(dId);
-			if (incentiveRecords.isEmpty()){
-				logger.error("ERROR : No incentive records found for this dealer ID.");
-				throw new FetchEmptyException("ERROR : No incentive records found for this dealer ID.");
-			}
-			else {
-				logger.info("SUCCESS : Fetching incentive records.");
-				return ResponseEntity.accepted().body(incentiveRecords);
+			final List<Incentive> incentiveRecords = dealerService.fetchIncentiveRecordsById(dId);
+			if (incentiveRecords.isEmpty()) {
+				throw new FetchEmptyException(ErrorMessagesConstants.NO_INC_AVL);
+			} else {
+				D_LOGGER.info("SUCCESS : Fetching incentive records.");
+				return response.body(incentiveRecords);
 			}
 		} else {
-			logger.error("ERROR : Dealer ID doesn't exist.");
-			throw new ValidationException("ERROR : Dealer ID doesn't exist.");
+			throw new ValidationException(ErrorMessagesConstants.ID_ERR);
 		}
 	}
+	
+	@GetMapping("/dealer/logged/fetchAllCars")
+	public ResponseEntity<?> fetchAllCars(@RequestParam final int dId){
+		if(D_LOGGER.isInfoEnabled()) {
+			D_LOGGER.info("Fetching all cars for Dealer ID: " + dId);
+		}
+		if (validatorService.dealerIdValidator(dId)) {
+			final List<Car> allCars = dealerService.fetchAllCars();
+			if(allCars.isEmpty()) {
+				throw new FetchEmptyException(ErrorMessagesConstants.NO_CAR_AVL);
+			}
+			else {
+				D_LOGGER.info("SUCCESS : Fetching all cars.");
+				return response.body(allCars);
+			}
+		} else {
+			throw new ValidationException(ErrorMessagesConstants.ID_ERR);
+		}
+	}
+	
+	@GetMapping("/dealer/logged/fetchApprovedDeals")
+	public ResponseEntity<?> fetchApprovedDeals(@RequestParam final int dId){
+		if(D_LOGGER.isInfoEnabled()) {
+			D_LOGGER.info("Fetching approved cars for Dealer ID: " + dId);
+		}
+		if (validatorService.dealerIdValidator(dId)) {
+			final List<Deals> approvedDeals = dealerService.fetchApprovedDeals();
+			if(approvedDeals.isEmpty()) {
+				throw new FetchEmptyException(ErrorMessagesConstants.NO_DEAL_AVL);
+			}
+			else {
+				D_LOGGER.info("SUCCESS : Fetching approved Deals.");
+				return response.body(approvedDeals);
+			}
+		} else {
+			throw new ValidationException(ErrorMessagesConstants.ID_ERR);
+		}
+	}
+	
+	@GetMapping("/dealer/logged/fetchRejectedDeals")
+	public ResponseEntity<?> fetchRejectedDeals(@RequestParam final int dId){
+		if(D_LOGGER.isInfoEnabled()) {
+			D_LOGGER.info("Fetching approved cars for Dealer ID: " + dId);
+		}
+		if (validatorService.dealerIdValidator(dId)) {
+			final List<Deals> rejectedDeals = dealerService.fetchRejectedDeals();
+			if(rejectedDeals.isEmpty()) {
+				throw new FetchEmptyException(ErrorMessagesConstants.NO_DEAL_AVL);
+			}
+			else {
+				D_LOGGER.info("SUCCESS : Fetching rejected Deals.");
+				return response.body(rejectedDeals);
+			}
+		} else {
+			throw new ValidationException(ErrorMessagesConstants.ID_ERR);
+		}
+	}
+	
+	@GetMapping("/dealer/logged/getProfile")
+	public ResponseEntity<?> fetchProfile(@RequestParam final int dId) {
+		if(D_LOGGER.isInfoEnabled()) {
+			D_LOGGER.info("Fetching profile of Dealer ID: " + dId);
+		}
+		if (validatorService.dealerIdValidator(dId)) {
+			final Dealer dealer = dealerService.fetchDealer(dId);
+			if(dealer.equals(null)) {
+				throw new FetchEmptyException(ErrorMessagesConstants.ID_ERR);
+			}
+			else {
+				D_LOGGER.info("SUCCESS : Fetching dealer.");
+				return response.body(dealer);
+			}
+		} else {
+			throw new ValidationException(ErrorMessagesConstants.ID_ERR);
+		}
+	}
+	
 }

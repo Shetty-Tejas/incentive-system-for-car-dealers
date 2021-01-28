@@ -26,58 +26,53 @@ import com.groupthree.incentivesystem.services.ManufacturerService;
 @ExtendWith(SpringExtension.class)
 public class ManufacturerServiceTest {
 
-	@InjectMocks
+	@MockBean
 	private ManufacturerService manufacturerService;
-	
 	@MockBean
 	private ManufacturerRepository manufacturerRepo;
+	@MockBean
 	private CarRepository carRepo;
+	@MockBean
 	private DealsRepository dealsRepo;
 	
 	public Manufacturer getManufacturer() {
-		Manufacturer manufacturer = new Manufacturer();
-		manufacturer.setManufacturerId(1);
-		manufacturer.setManufacturerName("Maruti Suzuki");
-		manufacturer.setManufacturerPass("1234");
+		Manufacturer manufacturer = new Manufacturer("Yamaha", "yamaha@yamaha.com", "yamaha");
 		return manufacturer;
 	}
-	
-	/*@Test
-	@Order(1)
-	@Rollback(false)
-	public void testInsertCar() {
-		Car car = new Car();
-		car.setCarManufacturer("Maruti Suzuki");
-		car.setCarModel("Swift");
-		car.setCarBasePrice(500000);
-		car.setCarMsp(700000);
-		
-		Mockito.when(carRepo.saveAndFlush(car)).thenReturn(car);
-		assertThat(manufacturerService.insertCar(car)).isEqual(car);
-		
-	}*/
 	
 	@Test
 	@Order(1)
 	@Rollback(false)
 	public void testFetchManufacturerName() {
-		String manufacturerByName = manufacturerService.fetchManufacturerName(1);
-		assertThat(manufacturerByName);
+		Manufacturer manufacturer = new Manufacturer("Yamaha", "yamaha@yamaha.com", "yamaha");
+		Mockito.when(manufacturerRepo.save(manufacturer)).thenReturn(getManufacturer());
+		assertThat(manufacturerRepo.findById(1));
 	}
 	
 	@Test
 	@Order(2)
+	@Rollback(false)
+	public void testInsertCar() {
+		Manufacturer m = getManufacturer();
+		Car car = new Car("Yamaha", "FZ25", 125000, 150000);
+		manufacturerRepo.saveAndFlush(m);
+		assertThat(manufacturerService.insertCar(m.getManufacturerId(), "FZ25", 125000, 150000));
+	}
+	
+	@Test
+	@Order(3)
 	@Rollback(false)
 	public void testFetchAllCars() {
 		List<Car> allCars = carRepo.findAll();
 		assertThat(allCars);
 	}
 	
-	/*@Test
-	@Order(3)
+	@Test
+	@Order(4)
 	@Rollback(false)
-	public void testFetchAllDeals() {
-		List<Deals> allDeals = dealsRepo.findAll();
+	public void testFetchAllDeals() { 
+		getManufacturer();
+		List<Deals> allDeals = dealsRepo.findByDealManufacturer("Bugatti");
 		assertThat(allDeals);
-	}*/	
+	}	
 }

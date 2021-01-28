@@ -28,10 +28,10 @@ public class HolidayRepositoryTest {
 	HolidayRepository holidayRepo;
 	public Holidays getHolidays() {
 		Holidays holidays = new Holidays();
-		DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-mm-dd");
-		LocalDate date = LocalDate.parse("yyyy-mm-dd" , format);
-		holidays.setHolidayDate("2021-01-01");
-		holidays.setHolidayName("New Year");
+		DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+		LocalDate date = LocalDate.parse("2021-01-02" , format);
+		holidays.setHolidayDate(date.toString());
+		holidays.setHolidayName("New Year's Day");
 		return holidays;
 	}
 	
@@ -39,7 +39,7 @@ public class HolidayRepositoryTest {
 	public void testExistsByHolidayDate() {
 		Holidays holidays = getHolidays();
 		Holidays savedInDb = holidayRepo.save(holidays);
-		Holidays getFromDb = holidayRepo.getOne(2021-01-01);
+		Holidays getFromDb = holidayRepo.findByHolidayDate("2021-01-02");
 		assertThat(getFromDb).isEqualTo(savedInDb);
 	}
 }

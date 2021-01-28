@@ -9,4 +9,5 @@ import com.groupthree.incentivesystem.entities.Holidays;
 @Repository
 public interface HolidayRepository extends JpaRepository<Holidays, Integer>{
 	public boolean existsByHolidayDate(String date);
+	public Holidays findByHolidayDate(String date);
 }

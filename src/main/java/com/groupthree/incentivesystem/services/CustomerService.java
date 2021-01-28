@@ -14,24 +14,24 @@ import com.groupthree.incentivesystem.repositories.DealsRepository;
 
 /**
  * This is a Service class for the Customer usecases.
- * @author Tejas
+ * @author Snehal
  *
  */
 @Service
 public class CustomerService {
 	
-	private static final Logger logger = LoggerFactory.getLogger("CustomerService.class");
+	private static final Logger CS_LOGGER = LoggerFactory.getLogger("CustomerService.class");
 
 	@Autowired
-	DealsRepository dealRepo;
+	private DealsRepository dealRepo;
 	
 	/**
 	 * Lists all approved deals
 	 * @return Map of name and price of the car.
 	 */
 	public Map<String, Long> fetchApprovedDeals() {
-		logger.info("Creating a List of Approved Deals");
-		List<Deals> approvedDeals = dealRepo.findByDealStatus("Approved");
+		CS_LOGGER.info("Creating a List of Approved Deals");
+		final List<Deals> approvedDeals = dealRepo.findByDealStatus("Approved");
 		return approvedDeals.stream().collect(Collectors.toMap(Deals::nameToString, Deals::getCarMsp));
 	}
 }

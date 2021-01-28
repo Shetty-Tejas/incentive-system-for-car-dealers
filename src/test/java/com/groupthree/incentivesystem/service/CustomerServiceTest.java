@@ -6,6 +6,8 @@ import java.sql.Date;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,7 +31,8 @@ public class CustomerServiceTest {
 	
 	@MockBean
 	private CustomerRepository customerRepo;
-	private DealsRepository dealRepo;
+	@MockBean
+	private DealsRepository dealsRepo;
 	
 	public Customer getCustomerId() {
 		Customer customer = new Customer();
@@ -47,7 +50,8 @@ public class CustomerServiceTest {
 	
 	@Test
 	public void testFetchApprovedDeals() {
-		List<Deals> approvedDeals = dealRepo.findAll();
-		assertThat(approvedDeals);
+		List<Deals> approvedDeals = dealsRepo.findByDealStatus("Approved");
+		Map<String, Long> deals = approvedDeals.stream().collect(Collectors.toMap(Deals::nameToString, Deals::getCarMsp));
+		assertThat(deals);
 	}
 }

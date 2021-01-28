@@ -5,6 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 /**
  * The main method to launch the Spring application.
@@ -17,8 +18,11 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @EntityScan("com.groupthree.incentivesystem.entities")
 @EnableJpaRepositories("com.groupthree.incentivesystem.repositories")
 public class IncentiveSystemApplication {
-
-	public static void main(String[] args) {
+	/**
+	 * Main method
+	 * @param args Arguments
+	 */
+	public static void main(final String[] args) {
 		SpringApplication.run(IncentiveSystemApplication.class, args);
 	}
 

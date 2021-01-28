@@ -24,7 +24,7 @@ import com.groupthree.incentivesystem.repositories.ManufacturerRepository;
 @Service
 public class ValidatorService {
 
-	private final Logger logger = LoggerFactory.getLogger(ValidatorService.class);
+	private static final Logger VS_LOGGER = LoggerFactory.getLogger(ValidatorService.class);
 
 	@Autowired
 	ManufacturerRepository manRepo;
@@ -48,7 +48,7 @@ public class ValidatorService {
 	 * @return True if the dealer ID exists in the database, else False.
 	 */
 	public boolean dealerIdValidator(int dId) {
-		logger.info("Dealer ID Validation in process");
+		VS_LOGGER.info("Dealer ID Validation in process");
 		return dealerRepo.existsById(dId);
 	}
 
@@ -59,7 +59,7 @@ public class ValidatorService {
 	 * @return True if the password matches the format, else False.
 	 */
 	public boolean passValidator(String pass) {
-		logger.info("Password Validation in process");
+		VS_LOGGER.info("Password Validation in process");
 		return pass.matches(passwordPattern);
 	}
 
@@ -69,7 +69,7 @@ public class ValidatorService {
 	 * @return True if the name matches the format, else False.
 	 */
 	public boolean nameValidator(String name) {
-		logger.info("Name Validation in process");
+		VS_LOGGER.info("Name Validation in process");
 		return name.matches(namePattern);
 	}
 
@@ -79,7 +79,7 @@ public class ValidatorService {
 	 * @return True if the contact matches the format, else False.
 	 */
 	public boolean contactValidator(long contact) {
-		logger.info("Contact Validation in process");
+		VS_LOGGER.info("Contact Validation in process");
 		return String.valueOf(contact).matches(contactPattern);
 	}
 
@@ -89,7 +89,7 @@ public class ValidatorService {
 	 * @return True if the contact number doesn't exist, else False.
 	 */
 	public boolean checkIfContactExists(long contact) {
-		logger.info("Checking if contact exists or not");
+		VS_LOGGER.info("Checking if contact exists or not");
 		return !dealerRepo.existsByDealerContact(contact);
 	}
 
@@ -99,8 +99,18 @@ public class ValidatorService {
 	 * @return True if the car exists, else False.
 	 */
 	public boolean carExistsValidator(String dealModel) {
-		logger.info("Checking whether Car Exists");
+		VS_LOGGER.info("Checking whether Car Exists");
 		return carRepo.existsById(dealModel);
+	}
+	
+	/**
+	 * This method validates whether a car doesn't exists in the car repository.
+	 * @param dealModel Only parameter for the method, accepts the model string.
+	 * @return True if the car doesn't exists, else False.
+	 */
+	public boolean carDoesntExistsValidator(String dealModel) {
+		VS_LOGGER.info("Checking whether Car doesn't Exists");
+		return !carRepo.existsById(dealModel);
 	}
 
 	/**
@@ -109,8 +119,18 @@ public class ValidatorService {
 	 * @return True if deal exists, else False.
 	 */
 	public boolean dealExistsValidator(String dealModel) {
-		logger.info("Validating whether deal exists");
+		VS_LOGGER.info("Validating whether deal exists");
 		return dealsRepo.existsById(dealModel);
+	}
+	
+	/**
+	 * This method validates whether a deal doesn't exist in the deal repository.
+	 * @param dealModel Only parameter for the method, accepts the model string.
+	 * @return True if deal doesn't exist, else False.
+	 */
+	public boolean dealDoesntExistsValidator(String dealModel) {
+		VS_LOGGER.info("Validating whether deal doesn't exists");
+		return !dealsRepo.existsById(dealModel);
 	}
 
 	/**
@@ -119,14 +139,14 @@ public class ValidatorService {
 	 * @return True if it follows the format, else False.
 	 */
 	public boolean incentiveRangeValidator(String incentiveRange) {
-		logger.info("Validating Incentive Range");
+		VS_LOGGER.info("Validating Incentive Range");
 		int index = incentiveRange.indexOf('-');
 		try {
 			int minRange = Integer.parseInt(incentiveRange.substring(0, index));
 			int maxRange = Integer.parseInt(incentiveRange.substring(index + 1));
 			return !(minRange >= maxRange || minRange < 0 || maxRange > 100);
 		} catch (NumberFormatException e) {
-			logger.error("NumberFormatException Occured", e);
+			VS_LOGGER.error("NumberFormatException Occured", e);
 			return false;
 		}
 	}
@@ -137,7 +157,7 @@ public class ValidatorService {
 	 * @return True if not in the future, else False.
 	 */
 	public boolean dealDateValidator(LocalDate date) {
-		logger.info("Validates Deal Dates");
+		VS_LOGGER.info("Validates Deal Dates");
 		LocalDate now = LocalDate.now();
 		Period period = date.until(now);
 		return (period.getDays() >= 0);
@@ -150,11 +170,11 @@ public class ValidatorService {
 	 */
 	public boolean checkIfDealApproved(String model) {
 		if (this.dealExistsValidator(model)) {
-			logger.info("Deal exists");
+			VS_LOGGER.info("Deal exists");
 			List<Deals> approvedDeals = dealsRepo.findByDealStatus("Approved");
 			return approvedDeals.stream().anyMatch(d -> d.getDealModel().equals(model));
 		} else {
-			logger.info("Deal does not exist.");
+			VS_LOGGER.info("Deal does not exist.");
 			return false;
 		}
 	}
@@ -166,7 +186,7 @@ public class ValidatorService {
 	 * @return True if the manufacturer ID exists in the database, else False.
 	 */
 	public boolean manufacturerIdValidation(int mId) {
-		logger.info("Manufacturer ID Validation in process");
+		VS_LOGGER.info("Manufacturer ID Validation in process");
 		return manRepo.existsById(mId);
 	}
 
@@ -176,7 +196,7 @@ public class ValidatorService {
 	 * @return True if the email follows the format, else False.
 	 */
 	public boolean manufacturerEmailValidator(String mEmail) {
-		logger.info("Manufacturer Email Validation in process");
+		VS_LOGGER.info("Manufacturer Email Validation in process");
 		return mEmail.matches(emailPattern);
 	}
 
@@ -186,7 +206,7 @@ public class ValidatorService {
 	 * @return True if the name doesn't already exists, else False.
 	 */
 	public boolean manufacturerExistsValidation(String mName) {
-		logger.info("Check if Manufacturer Already exists");
+		VS_LOGGER.info("Check if Manufacturer Already exists");
 		return !manRepo.existsByManufacturerName(mName);
 	}
 
@@ -196,7 +216,7 @@ public class ValidatorService {
 	 * @return True if the model follows the format, else False.
 	 */
 	public boolean carModelValidation(String model) {
-		logger.info("Check if Car Already Exists");
+		VS_LOGGER.info("Check if Car Already Exists");
 		return model.matches("^\\w+$");
 	}
 
@@ -207,7 +227,7 @@ public class ValidatorService {
 	 * @return True if validated, else False.
 	 */
 	public boolean carPriceValidation(long carBasePrice, long carMsp) {
-		logger.info("Car Price Validation in process");
+		VS_LOGGER.info("Car Price Validation in process");
 		return (carBasePrice < carMsp);
 	}
 }

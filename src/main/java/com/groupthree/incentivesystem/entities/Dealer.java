@@ -1,6 +1,7 @@
 package com.groupthree.incentivesystem.entities;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotEmpty;
 
 @Entity
 @Table(name = "dealer_table")
@@ -9,10 +10,12 @@ public class Dealer {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "dealer_id")
 	private int dealerId;
+	@NotEmpty(message = "Dealer Name cannot be empty")
 	@Column(name = "dealer_name")
 	private String dealerName;
 	@Column(name = "dealer_contact")
 	private long dealerContact;
+	@NotEmpty(message = "Dealer Password cannot be empty")
 	@Column(name = "dealer_pass")
 	private String dealerPass;
 	@Column(name = "dealer_incentive")

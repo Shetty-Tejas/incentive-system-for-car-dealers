@@ -1,4 +1,4 @@
-package com.groupthree.incentivesystem;
+ package com.groupthree.incentivesystem;
 
 import java.util.List;
 
@@ -6,6 +6,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.ResponseEntity.BodyBuilder;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -13,6 +15,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.groupthree.incentivesystem.entities.Car;
 import com.groupthree.incentivesystem.entities.Deals;
+import com.groupthree.incentivesystem.entities.Manufacturer;
+import com.groupthree.incentivesystem.exceptions.ErrorMessagesConstants;
 import com.groupthree.incentivesystem.exceptions.FetchEmptyException;
 import com.groupthree.incentivesystem.exceptions.LoginException;
 import com.groupthree.incentivesystem.exceptions.ValidationException;
@@ -26,14 +30,27 @@ import com.groupthree.incentivesystem.services.ValidatorService;
  *
  */
 @RestController
+@CrossOrigin(origins = "http://localhost:3000")
 public class ManufacturerController {
+	/**
+	 * Class level logger
+	 */
+	private static final Logger M_LOGGER = LoggerFactory.getLogger("ManufacturerController.class");
 
-	private static final Logger logger = LoggerFactory.getLogger("ManufacturerController.class");
-
+	/**
+	 * Manufacturer Service class declaration
+	 */
 	@Autowired
-	ManufacturerService manufacturerService;
+	private ManufacturerService manufService;
+	/**
+	 * Validator Service class declaration
+	 */
 	@Autowired
-	ValidatorService validatorService;
+	private ValidatorService validatorService;
+	/**
+	 * BodyBuilder object
+	 */
+	private final BodyBuilder response = ResponseEntity.accepted();
 
 	/**
 	 * This method is used to log in the manufacturer.
@@ -44,24 +61,23 @@ public class ManufacturerController {
 	 * @return Status whether the login is successful or throws an exception.
 	 */
 	@PostMapping("/manufacturer/login")
-	public ResponseEntity<?> manufacturerLogin(@RequestParam int mId, @RequestParam String mPass) {
-		logger.info("Manufacturer Login requested by the Manufacturer ID: " + mId);
+	public ResponseEntity<?> manufacturerLogin(@RequestParam final int mId, @RequestParam final String mPass) {
+		if (M_LOGGER.isInfoEnabled()) {
+			M_LOGGER.info("Manufacturer Login requested by the Manufacturer ID: " + mId);
+		}
 		if (validatorService.manufacturerIdValidation(mId)) {
 			if (validatorService.passValidator(mPass)) {
-				if (manufacturerService.manufacturerLogin(mId, mPass)) {
-					logger.error("SUCCESS : Logged in!");
-					return ResponseEntity.accepted().body("SUCCESS : Logged in!");
+				if (manufService.manufacturerLogin(mId, mPass)) {
+					M_LOGGER.info("SUCCESS : Logged in!");
+					return response.body(mId);
 				} else {
-					logger.error("ERROR : Wrong credentials for the ID: " + mId);
-					throw new LoginException("ERROR : Wrong credentials for the ID: " + mId);
+					throw new LoginException(ErrorMessagesConstants.WRONG_CRED + mId);
 				}
 			} else {
-				logger.error("ERROR : The password contains illegal characters.");
-				throw new ValidationException("ERROR : The password contains illegal characters.");
+				throw new ValidationException(ErrorMessagesConstants.PASS_ERR);
 			}
 		} else {
-			logger.error("ERROR : Manufacturer ID doesn't exist.");
-			throw new ValidationException("ERROR : Manufacturer ID doesn't exist.");
+			throw new ValidationException(ErrorMessagesConstants.ID_ERR);
 		}
 	}
 
@@ -78,31 +94,28 @@ public class ManufacturerController {
 	 * @return Registered Manufacturer object else throws an exception.
 	 */
 	@PostMapping("/manufacturer/register")
-	public ResponseEntity<?> manufacturerRegister(@RequestParam String mName, @RequestParam String mEmail,
-			@RequestParam String mPass) {
-		logger.info("Manufacturer Registration registered by Manufacturer Name: " + mName);
+	public ResponseEntity<?> manufacturerRegister(@RequestParam final String mName, @RequestParam final String mEmail,
+			@RequestParam final String mPass) {
+		if (M_LOGGER.isInfoEnabled()) {
+			M_LOGGER.info("Manufacturer Registration registered by Manufacturer Name: " + mName);
+		}
 		if (validatorService.nameValidator(mName)) {
 			if (validatorService.manufacturerEmailValidator(mEmail)) {
 				if (validatorService.passValidator(mPass)) {
 					if (validatorService.manufacturerExistsValidation(mName)) {
-						logger.info("SUCCESS : Registering Manufacturer.");
-						return ResponseEntity.accepted()
-								.body(manufacturerService.manufacturerRegister(mName, mEmail, mPass));
+						M_LOGGER.info("SUCCESS : Registering Manufacturer.");
+						return response.body(manufService.manufacturerRegister(mName, mEmail, mPass));
 					} else {
-						logger.error("ERROR : Manufacturer for this name already exists.");
-						throw new ValidationException("ERROR : Manufacturer for this name already exists.");
+						throw new ValidationException(ErrorMessagesConstants.NAME_ERR);
 					}
 				} else {
-					logger.error("ERROR : Password is in an invalid format.");
-					throw new ValidationException("ERROR : Password is in an invalid format.");
+					throw new ValidationException(ErrorMessagesConstants.PASS_ERR);
 				}
 			} else {
-				logger.error("ERROR : Email is in an invalid format.");
-				throw new ValidationException("ERROR : Email is in an invalid format.");
+				throw new ValidationException(ErrorMessagesConstants.EMAIL_ERR);
 			}
 		} else {
-			logger.error("ERROR : Name is in an invalid format.");
-			throw new ValidationException("ERROR : Name is in an invalid format.");
+			throw new ValidationException(ErrorMessagesConstants.NAME_FORMAT);
 		}
 	}
 
@@ -122,30 +135,28 @@ public class ManufacturerController {
 	 * @return Registered Car object else throws an exception.
 	 */
 	@PostMapping("/manufacturer/logged/insertCar")
-	public ResponseEntity<?> insertCar(@RequestParam int mId, @RequestParam String carModel,
-			@RequestParam long carBasePrice, @RequestParam long carMsp) {
-		logger.info("Car insertion requested by Manufacturer ID: " + mId);
+	public ResponseEntity<?> insertCar(@RequestParam final int mId, @RequestParam final String carModel,
+			@RequestParam final long carBasePrice, @RequestParam final long carMsp) {
+		if (M_LOGGER.isInfoEnabled()) {
+			M_LOGGER.info("Car insertion requested by Manufacturer ID: " + mId);
+		}
 		if (validatorService.manufacturerIdValidation(mId)) {
 			if (validatorService.carModelValidation(carModel)) {
-				if (!validatorService.carExistsValidator(carModel)) {
+				if (validatorService.carDoesntExistsValidator(carModel)) {
 					if (validatorService.carPriceValidation(carBasePrice, carMsp)) {
-						return ResponseEntity.accepted()
-								.body(manufacturerService.insertCar(mId, carModel, carBasePrice, carMsp));
+						M_LOGGER.info("SUCCESS : Inserting car.");
+						return response.body(manufService.insertCar(mId, carModel, carBasePrice, carMsp));
 					} else {
-						logger.error("ERROR : Car price invalid.");
-						throw new ValidationException("ERROR : Car price invalid.");
+						throw new ValidationException(ErrorMessagesConstants.CAR_PRICE);
 					}
 				} else {
-					logger.error("ERROR : Car already exists.");
-					throw new ValidationException("ERROR : Car already exists.");
+					throw new ValidationException(ErrorMessagesConstants.CAR_EXISTS);
 				}
 			} else {
-				logger.error("ERROR : Car model is in an invalid format.");
-				throw new ValidationException("ERROR : Car model is in an invalid format.");
+				throw new ValidationException(ErrorMessagesConstants.CAR_FORMAT);
 			}
 		} else {
-			logger.error("ERROR : Manufacturer ID doesn't exist.");
-			throw new ValidationException("ERROR : Manufacturer ID doesn't exist.");
+			throw new ValidationException(ErrorMessagesConstants.ID_ERR);
 		}
 	}
 
@@ -162,20 +173,20 @@ public class ManufacturerController {
 	 * @return Altered Deals object else throws an exception.
 	 */
 	@PostMapping("/manufacturer/logged/alterStatus")
-	public ResponseEntity<?> alterStatus(@RequestParam int mId, @RequestParam String carModel,
-			@RequestParam boolean flag) {
-		logger.info("Status alteration requested by the Manufacturer ID: " + mId);
+	public ResponseEntity<?> alterStatus(@RequestParam final int mId, @RequestParam final String carModel,
+			@RequestParam final boolean flag) {
+		if (M_LOGGER.isInfoEnabled()) {
+			M_LOGGER.info("Status alteration requested by the Manufacturer ID: " + mId);
+		}
 		if (validatorService.manufacturerIdValidation(mId)) {
 			if (validatorService.dealExistsValidator(carModel)) {
-				logger.info("SUCCESS : Altering status.");
-				return ResponseEntity.accepted().body(manufacturerService.updateDealStatus(carModel, flag));
+				M_LOGGER.info("SUCCESS : Altering status.");
+				return response.body(manufService.updateDealStatus(carModel, flag));
 			} else {
-				logger.error("ERROR : Deal doesn't exists.");
-				throw new ValidationException("ERROR : Deal doesn't exists.");
+				throw new ValidationException(ErrorMessagesConstants.DEAL_NOT_EXIST);
 			}
 		} else {
-			logger.error("ERROR : Manufacturer ID doesn't exist.");
-			throw new ValidationException("ERROR : Manufacturer ID doesn't exist.");
+			throw new ValidationException(ErrorMessagesConstants.ID_ERR);
 		}
 	}
 
@@ -187,20 +198,20 @@ public class ManufacturerController {
 	 * @return List of all deals for a manufacturer, else throws an exception.
 	 */
 	@GetMapping("/manufacturer/logged/fetchAllDeals")
-	public ResponseEntity<?> fetchAllDeals(@RequestParam int mId) {
-		logger.info("Deal fetch requested by Manufacturer ID: " + mId);
+	public ResponseEntity<?> fetchAllDeals(@RequestParam final int mId) {
+		if (M_LOGGER.isInfoEnabled()) {
+			M_LOGGER.info("Deal fetch requested by Manufacturer ID: " + mId);
+		}
 		if (validatorService.manufacturerIdValidation(mId)) {
-			List<Deals> allDeals = manufacturerService.fetchAllDeals(mId);
+			final List<Deals> allDeals = manufService.fetchAllDeals(mId);
 			if (allDeals.isEmpty()) {
-				logger.error("ERROR : No deals exist.");
-				throw new FetchEmptyException("ERROR : No deals exist.");
+				throw new FetchEmptyException(ErrorMessagesConstants.DEAL_NOT_EXIST);
 			} else {
-				logger.info("SUCCESS : Fetching all deals.");
-				return ResponseEntity.accepted().body(allDeals);
+				M_LOGGER.info("SUCCESS : Fetching all deals.");
+				return response.body(allDeals);
 			}
 		} else {
-			logger.error("ERROR : Manufacturer ID doesn't exist.");
-			throw new ValidationException("ERROR : Manufacturer ID doesn't exist.");
+			throw new ValidationException(ErrorMessagesConstants.ID_ERR);
 		}
 	}
 
@@ -212,22 +223,38 @@ public class ManufacturerController {
 	 * @return List of all cars for the manufacturer, else throws an exception.
 	 */
 	@GetMapping("/manufacturer/logged/fetchAllCars")
-	public ResponseEntity<?> fetchAllCars(@RequestParam int mId) {
-		logger.info("Car fetch requested by Manufacturer ID: " + mId);
+	public ResponseEntity<?> fetchAllCars(@RequestParam final int mId) {
+		if (M_LOGGER.isInfoEnabled()) {
+			M_LOGGER.info("Car fetch requested by Manufacturer ID: " + mId);
+		}
 		if (validatorService.manufacturerIdValidation(mId)) {
-			List<Car> allCars = manufacturerService.fetchAllCars(mId);
+			final List<Car> allCars = manufService.fetchAllCars(mId);
 			if (allCars.isEmpty()) {
-				logger.error("ERROR : No cars found.");
-				throw new FetchEmptyException("ERROR : No cars found.");
-			}
-			else {
-				logger.info("SUCCESS : Fetching all cars.");
-				return ResponseEntity.accepted().body(allCars);
+				throw new FetchEmptyException(ErrorMessagesConstants.CAR_NOT_EXIST);
+			} else {
+				M_LOGGER.info("SUCCESS : Fetching all cars.");
+				return response.body(allCars);
 			}
 		} else {
-			logger.error("ERROR : Manufacturer ID doesn't exist.");
-			throw new ValidationException("ERROR : Manufacturer ID doesn't exist.");
+			throw new ValidationException(ErrorMessagesConstants.ID_ERR);
 		}
 	}
-
+	
+	@GetMapping("/manufacturer/logged/getProfile")
+	public ResponseEntity<?> getProfile(@RequestParam final int mId){
+		if (M_LOGGER.isInfoEnabled()) {
+			M_LOGGER.info("Fetching profile for Manufacturer ID: " + mId);
+		}
+		if (validatorService.manufacturerIdValidation(mId)) {
+			final Manufacturer manufacturer = manufService.getProfile(mId);
+			if (manufacturer.equals(null)) {
+				throw new FetchEmptyException(ErrorMessagesConstants.ID_ERR);
+			} else {
+				M_LOGGER.info("SUCCESS : Fetching all cars.");
+				return response.body(manufacturer);
+			}
+		} else {
+			throw new ValidationException(ErrorMessagesConstants.ID_ERR);
+		}
+	}
 }

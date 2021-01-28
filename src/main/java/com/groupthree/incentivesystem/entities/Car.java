@@ -1,12 +1,14 @@
 package com.groupthree.incentivesystem.entities;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotEmpty;
 
 @Entity
 @Table(name = "car_table")
 public class Car {
 	@Column(name = "car_manufacturer")
 	private String carManufacturer;
+	@NotEmpty(message = "Car Model cannot be empty")
 	@Id
 	@Column(name = "car_model")
 	private String carModel;
